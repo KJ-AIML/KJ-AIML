@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="280" viewBox="0 0 860 280" role="img">
+  <title>KJ AI infrastructure profile</title>
+  <desc>Animated terminal initialization for KJ, an AI Engineer and Founder building agent infrastructure and developer tools.</desc>
+  <style>
+    text { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .panel { fill: #161B22; stroke: #30363D; }
+    .muted { fill: #8B949E; }
+    .text { fill: #E6EDF3; }
+    .mint { fill: #59F3C0; }
+    .blue { fill: #7AA2F7; }
+    .yellow { fill: #F2CC60; }
+    @media (prefers-reduced-motion: reduce) { .animated { animation: none !important; } }
+  </style>
+
+<rect width="860" height="280" rx="14" fill="#0D1117"/>
+<rect x="1" y="1" width="858" height="278" rx="14" fill="none" stroke="#30363D"/>
+<rect x="1" y="1" width="858" height="34" rx="14" fill="#161B22"/>
+<circle cx="24" cy="18" r="5" fill="#59F3C0"/><circle cx="42" cy="18" r="5" fill="#F2CC60"/><circle cx="60" cy="18" r="5" fill="#7AA2F7"/>
+<text x="84" y="23" font-size="12" class="muted">KJ-AIML / profile-init</text>
+<text x="42" y="72" font-size="14" class="mint">KJ@AI-INFRA ~ $ initialize_profile</text>
+<text x="42" y="126" font-size="54" font-weight="700" class="text">KJ</text>
+<text x="44" y="151" font-size="16" class="blue">AI Engineer · Founder</text>
+<text x="44" y="184" font-size="15" class="text">Building agent infrastructure,</text>
+<text x="44" y="207" font-size="15" class="text">developer tools, and systems</text>
+<text x="44" y="230" font-size="15" class="text">that make AI actually work.</text>
+<g opacity="0.35"><text x="524" y="84" font-size="13" fill="#59F3C0">[01] Initializing agent systems...</text>
+<animate attributeName="opacity" values="0.35;1" dur="0.6s" begin="0.00s" fill="freeze"/>
+</g>
+<g opacity="0.35"><text x="524" y="114" font-size="13" fill="#7AA2F7">[02] Loading infrastructure layer...</text>
+<animate attributeName="opacity" values="0.35;1" dur="0.6s" begin="0.42s" fill="freeze"/>
+</g>
+<g opacity="0.35"><text x="524" y="144" font-size="13" fill="#F2CC60">[03] Connecting orchestration...</text>
+<animate attributeName="opacity" values="0.35;1" dur="0.6s" begin="0.84s" fill="freeze"/>
+</g>
+<g opacity="0.35"><text x="524" y="174" font-size="13" fill="#E6EDF3">[04] Profile ready.</text>
+<animate attributeName="opacity" values="0.35;1" dur="0.6s" begin="1.26s" fill="freeze"/>
+</g>
+<path d="M540 202h170 M540 202v28h170 M710 202v-28 M710 230h85" stroke="#30363D" fill="none"/>
+<circle cx="540" cy="202" r="5" fill="#59F3C0"/><circle cx="710" cy="202" r="5" fill="#7AA2F7"/><circle cx="795" cy="230" r="5" fill="#F2CC60"/>
+<text x="524" y="260" font-size="11" class="muted">spec → orchestrate → execute → validate</text>
+</svg>

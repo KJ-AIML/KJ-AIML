@@ -15,7 +15,7 @@
 
 <rect width="860" height="218" rx="14" fill="#0D1117"/><rect x="1" y="1" width="858" height="216" rx="14" fill="none" stroke="#30363D"/>
 <text x="24" y="32" font-size="15" class="text">CONTRIBUTION TRACE</text>
-<text x="24" y="52" font-size="11" class="muted">779 contributions · 2025-07-20 → 2026-07-23</text>
+<text x="24" y="52" font-size="11" class="muted">779 contributions · 2025-07-20 → 2026-07-24</text>
 <rect x="24" y="162" width="11" height="11" rx="3" fill="#161B22" opacity="0.5"><animate attributeName="opacity" values="0.5;1" dur="0.45s" begin="0.00s" fill="freeze"/></rect>
 <rect x="24" y="78" width="11" height="11" rx="3" fill="#161B22" opacity="0.5"><animate attributeName="opacity" values="0.5;1" dur="0.45s" begin="0.01s" fill="freeze"/></rect>
 <rect x="24" y="92" width="11" height="11" rx="3" fill="#161B22" opacity="0.5"><animate attributeName="opacity" values="0.5;1" dur="0.45s" begin="0.01s" fill="freeze"/></rect>
@@ -385,6 +385,7 @@
 <rect x="752" y="106" width="11" height="11" rx="3" fill="#161B22" opacity="0.5"><animate attributeName="opacity" values="0.5;1" dur="0.45s" begin="2.20s" fill="freeze"/></rect>
 <rect x="752" y="120" width="11" height="11" rx="3" fill="#161B22" opacity="0.5"><animate attributeName="opacity" values="0.5;1" dur="0.45s" begin="2.20s" fill="freeze"/></rect>
 <rect x="752" y="134" width="11" height="11" rx="3" fill="#0E4429" opacity="0.5"><animate attributeName="opacity" values="0.5;1" dur="0.45s" begin="2.21s" fill="freeze"/></rect>
+<rect x="752" y="148" width="11" height="11" rx="3" fill="#161B22" opacity="0.5"><animate attributeName="opacity" values="0.5;1" dur="0.45s" begin="2.21s" fill="freeze"/></rect>
 <text x="24" y="186" font-size="10" class="muted">Less</text>
 <rect x="62" y="178" width="11" height="11" rx="3" fill="#161B22"/>
 <rect x="78" y="178" width="11" height="11" rx="3" fill="#0E4429"/>
@@ -392,5 +393,5 @@
 <rect x="110" y="178" width="11" height="11" rx="3" fill="#26A641"/>
 <rect x="126" y="178" width="11" height="11" rx="3" fill="#59F3C0"/>
 <text x="148" y="186" font-size="10" class="muted">More</text>
-<text x="680" y="186" font-size="10" fill="#59F3C0">streak 1d · max 8d</text>
+<text x="680" y="186" font-size="10" fill="#59F3C0">streak 0d · max 8d</text>
 </svg>

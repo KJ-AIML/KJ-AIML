@@ -3,24 +3,26 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from svg_common import BG, BLUE, BORDER, MINT, MUTED, PANEL, TEXT, YELLOW, close_svg, svg_head, xml
+from svg_common import CHROME_H, DIM, INK, SIGNAL, TEXT, close_svg, svg_head, terminal_chrome, xml
 
 
 def generate(path: Path, static: bool = False) -> None:
     rows = [
-        ("Role", "AI Engineer · Founder", MINT),
-        ("Focus", "Agent infrastructure", BLUE),
-        ("Building", "Axtra Intellion", YELLOW),
+        ("Role", "AI Engineer · Founder", SIGNAL),
+        ("Focus", "Agent infrastructure", INK),
+        ("Building", "Axtra Intellion", DIM),
         ("Core", "ALMS · AXGA", TEXT),
-        ("Exploring", "Tracer", BLUE),
+        ("Exploring", "Tracer", INK),
         ("Stack", "Python · Rust · TypeScript", TEXT),
         ("Infra", "GCP · Docker · E2B", TEXT),
         ("Mode", "Remote-first", TEXT),
-        ("Principle", "Build it. Validate it. Reliable.", MINT),
+        ("Principle", "Build it. Validate it. Reliable.", SIGNAL),
     ]
-    out = [svg_head("KJ system identity card", "Neofetch-inspired identity card for KJ-AIML.", 420, 360)]
-    out.append(f'<rect width="420" height="360" rx="14" fill="{BG}"/><rect x="1" y="1" width="418" height="358" rx="14" fill="none" stroke="{BORDER}"/>')
-    out.append(f'<text x="24" y="38" font-size="16" class="mint">KJ-AIML@github</text>')
+    width, height = 420, 360 + CHROME_H
+    out = [svg_head("KJ system identity card", "Neofetch-inspired identity card for KJ-AIML.", width, height)]
+    out.append(terminal_chrome(width, height, "KJ@AI-INFRA: ~$ ./whoami --card"))
+    out.append(f'<g transform="translate(0,{CHROME_H})">')
+    out.append(f'<text x="24" y="38" font-size="16" class="signal">KJ-AIML@github</text>')
     out.append(f'<text x="24" y="58" font-size="12" class="muted">────────────────────────────────</text>')
     for index, (key, value, color) in enumerate(rows):
         y = 88 + index * 28
@@ -30,7 +32,7 @@ def generate(path: Path, static: bool = False) -> None:
         if not static:
             out.append(f'<animate attributeName="opacity" values="0.35;1" dur="0.45s" begin="{delay:.2f}s" fill="freeze"/><animateTransform attributeName="transform" type="translate" values="0 3;0 0" dur="0.45s" begin="{delay:.2f}s" fill="freeze"/>')
         out.append('</g>')
-    out.extend([f'<text x="24" y="340" font-size="11" class="muted">status: designing reliable systems</text>', close_svg()])
+    out.extend([f'<text x="24" y="340" font-size="11" class="muted">status: designing reliable systems</text>', '</g>', close_svg()])
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(out), encoding="utf-8")
 

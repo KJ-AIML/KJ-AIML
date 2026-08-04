@@ -9,7 +9,7 @@ from contributions import load_data
 
 ROOT = Path(__file__).resolve().parents[1]
 SVG_DIR = ROOT / "assets"
-EXPECTED = ["kj-hero.svg", "kj-system-card.svg", "kj-system-map.svg", "contribution-heatmap.svg"]
+EXPECTED = ["kj-hero.svg", "kj-wordmark.svg", "kj-system-card.svg", "kj-system-map.svg", "contribution-heatmap.svg"]
 
 
 def main() -> None:

@@ -11,6 +11,8 @@ python scripts/validate_profile.py
 python -m pytest -q
 ```
 
+`assets/kj-wordmark.svg` sits outside this loop: it is a static committed artifact rebuilt only when its text, font or framing changes, so `generate_all.py` and CI never touch it and never need numpy or Pillow. See [3d-ascii-wordmark.md](3d-ascii-wordmark.md).
+
 Use `STATIC=1 python scripts/generate_all.py` on macOS/Linux or `$env:STATIC='1'; python scripts/generate_all.py` in PowerShell to omit one-time SVG animations. Fetching uses the public GitHub contribution HTML, a descriptive user agent, a timeout, bounded retries, and only replaces the JSON after a validated parse.
 
 ## Content and links

@@ -6,17 +6,20 @@ from pathlib import Path
 import os
 
 from contributions import load_data
-from svg_common import BG, BLUE, BORDER, MINT, MUTED, PANEL, TEXT, close_svg, svg_head, xml
+from svg_common import CHROME_H, PANEL, SIGNAL, close_svg, svg_head, terminal_chrome, xml
 
 
-COLORS = ["#161B22", "#0E4429", "#006D32", "#26A641", "#59F3C0"]
+# The contribution scale is the one place hue is allowed: these are GitHub's own
+# calendar greens, so the graph reads the way every other GitHub profile does.
+COLORS = [PANEL, "#0e4429", "#006d32", "#26a641", "#39d353"]
 
 
 def generate(data_path: Path, output_path: Path, static: bool = False) -> None:
     records, metrics = load_data(data_path)
-    width, height = 860, 218
+    width, height = 860, 218 + CHROME_H
     out = [svg_head("KJ contribution trace", "One-year contribution calendar fetched from KJ-AIML's public GitHub profile.", width, height)]
-    out.append(f'<rect width="{width}" height="{height}" rx="14" fill="{BG}"/><rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="14" fill="none" stroke="{BORDER}"/>')
+    out.append(terminal_chrome(width, height, "KJ@AI-INFRA: ~$ ./contributions.sh"))
+    out.append(f'<g transform="translate(0,{CHROME_H})">')
     out.append(f'<text x="24" y="32" font-size="15" class="text">CONTRIBUTION TRACE</text>')
     total = metrics.get("total")
     total_label = f"{total:,} contributions" if isinstance(total, int) else "contribution levels"
@@ -42,7 +45,8 @@ def generate(data_path: Path, output_path: Path, static: bool = False) -> None:
         out.append(f'<rect x="{62 + index * 16}" y="178" width="11" height="11" rx="3" fill="{color}"/>')
     out.append(f'<text x="148" y="186" font-size="10" class="muted">More</text>')
     if metrics.get("current_streak") is not None:
-        out.append(f'<text x="680" y="186" font-size="10" fill="{MINT}">streak {metrics["current_streak"]}d · max {metrics["longest_streak"]}d</text>')
+        out.append(f'<text x="680" y="186" font-size="10" fill="{SIGNAL}">streak {metrics["current_streak"]}d · max {metrics["longest_streak"]}d</text>')
+    out.append('</g>')
     out.append(close_svg())
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(out), encoding="utf-8")

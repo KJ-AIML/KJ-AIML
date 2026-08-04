@@ -4,39 +4,35 @@
   <desc>Animated terminal initialization for KJ, an AI Engineer and Founder building agent infrastructure and developer tools.</desc>
   <style>
     text { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-    .panel { fill: #161B22; stroke: #30363D; }
-    .muted { fill: #8B949E; }
-    .text { fill: #E6EDF3; }
-    .mint { fill: #59F3C0; }
-    .blue { fill: #7AA2F7; }
-    .yellow { fill: #F2CC60; }
+    .panel { fill: #161b22; stroke: #30363d; }
+    .muted { fill: #7d8590; }
+    .text { fill: #c9d1d9; }
+    .signal { fill: #e6edf3; }
+    .ink { fill: #c9d1d9; }
+    .dim { fill: #8b949e; }
     @media (prefers-reduced-motion: reduce) { .animated { animation: none !important; } }
   </style>
 
-<rect width="860" height="280" rx="14" fill="#0D1117"/>
-<rect x="1" y="1" width="858" height="278" rx="14" fill="none" stroke="#30363D"/>
-<rect x="1" y="1" width="858" height="34" rx="14" fill="#161B22"/>
-<circle cx="24" cy="18" r="5" fill="#59F3C0"/><circle cx="42" cy="18" r="5" fill="#F2CC60"/><circle cx="60" cy="18" r="5" fill="#7AA2F7"/>
-<text x="84" y="23" font-size="12" class="muted">KJ-AIML / profile-init</text>
-<text x="42" y="72" font-size="14" class="mint">KJ@AI-INFRA ~ $ initialize_profile</text>
+<defs><linearGradient id="wbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#111722"/><stop offset="1" stop-color="#0d1117"/></linearGradient></defs><rect width="860" height="280" rx="14" fill="url(#wbg)"/><rect x="0.5" y="0.5" width="859" height="279" rx="14" fill="none" stroke="#30363d"/><line x1="0" y1="30" x2="860" y2="30" stroke="#30363d"/><circle cx="20" cy="15" r="4.5" fill="#ff5f56"/><circle cx="36" cy="15" r="4.5" fill="#ffbd2e"/><circle cx="52" cy="15" r="4.5" fill="#27c93f"/><text x="430" y="19" font-size="11.5" text-anchor="middle" class="muted">KJ@AI-INFRA: ~$ ./profile-init</text>
+<text x="42" y="72" font-size="14" class="signal">KJ@AI-INFRA ~ $ initialize_profile</text>
 <text x="42" y="126" font-size="54" font-weight="700" class="text">KJ</text>
-<text x="44" y="151" font-size="16" class="blue">AI Engineer · Founder</text>
+<text x="44" y="151" font-size="16" class="ink">AI Engineer · Founder</text>
 <text x="44" y="184" font-size="15" class="text">Building agent infrastructure,</text>
 <text x="44" y="207" font-size="15" class="text">developer tools, and systems</text>
 <text x="44" y="230" font-size="15" class="text">that make AI actually work.</text>
-<g opacity="0.35"><text x="524" y="84" font-size="13" fill="#59F3C0">[01] Initializing agent systems...</text>
+<g opacity="0.35"><text x="524" y="84" font-size="13" fill="#e6edf3">[01] Initializing agent systems...</text>
 <animate attributeName="opacity" values="0.35;1" dur="0.6s" begin="0.00s" fill="freeze"/>
 </g>
-<g opacity="0.35"><text x="524" y="114" font-size="13" fill="#7AA2F7">[02] Loading infrastructure layer...</text>
+<g opacity="0.35"><text x="524" y="114" font-size="13" fill="#c9d1d9">[02] Loading infrastructure layer...</text>
 <animate attributeName="opacity" values="0.35;1" dur="0.6s" begin="0.42s" fill="freeze"/>
 </g>
-<g opacity="0.35"><text x="524" y="144" font-size="13" fill="#F2CC60">[03] Connecting orchestration...</text>
+<g opacity="0.35"><text x="524" y="144" font-size="13" fill="#8b949e">[03] Connecting orchestration...</text>
 <animate attributeName="opacity" values="0.35;1" dur="0.6s" begin="0.84s" fill="freeze"/>
 </g>
-<g opacity="0.35"><text x="524" y="174" font-size="13" fill="#E6EDF3">[04] Profile ready.</text>
+<g opacity="0.35"><text x="524" y="174" font-size="13" fill="#c9d1d9">[04] Profile ready.</text>
 <animate attributeName="opacity" values="0.35;1" dur="0.6s" begin="1.26s" fill="freeze"/>
 </g>
-<path d="M540 202h170 M540 202v28h170 M710 202v-28 M710 230h85" stroke="#30363D" fill="none"/>
-<circle cx="540" cy="202" r="5" fill="#59F3C0"/><circle cx="710" cy="202" r="5" fill="#7AA2F7"/><circle cx="795" cy="230" r="5" fill="#F2CC60"/>
+<path d="M540 202h170 M540 202v28h170 M710 202v-28 M710 230h85" stroke="#30363d" fill="none"/>
+<circle cx="540" cy="202" r="5" fill="#e6edf3"/><circle cx="710" cy="202" r="5" fill="#c9d1d9"/><circle cx="795" cy="230" r="5" fill="#8b949e"/>
 <text x="524" y="260" font-size="11" class="muted">spec → orchestrate → execute → validate</text>
 </svg>

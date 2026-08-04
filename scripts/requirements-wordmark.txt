@@ -1,0 +1,4 @@
+# Only needed to regenerate assets/kj-wordmark.svg, which is a static committed
+# artifact. CI installs requirements.txt and never runs generate_wordmark.py.
+numpy==2.5.0
+Pillow==12.3.0

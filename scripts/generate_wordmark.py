@@ -37,30 +37,22 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from svg_common import xml
+from svg_common import ACCENT, BG, BG2, BORDER as FRAME, DOTS, MUTED as TITLE_TEXT, xml
 
 ROOT = Path(__file__).resolve().parents[1]
 
 # ---- palette --------------------------------------------------------------
-# The reference article's terminal palette rather than the profile tokens: the
-# shading is neutral so the ramp itself reads as the light, and a saturated fill
-# would flatten the face/wall contrast that sells the 3D.
-BG = "#0d1117"
-BG2 = "#111722"                               # top of the panel gradient
-FRAME = "#30363d"
-TITLE_TEXT = "#7d8590"
-DOTS = ["#ff5f56", "#ffbd2e", "#27c93f"]
-
+# Panel chrome and the semantic accents come from svg_common so there is one
+# copy to change. Only the shading ramp is local, because it belongs to this
+# renderer rather than to the design system.
+#
 # The density ramp is already a dither, so give it a tonal range instead of one
 # flat fill: dim characters sit back, dense ones come forward at near-white. The
 # shading is carried twice over -- by glyph density and by value -- which is what
 # makes the extrusion walls separate from the letter faces at this resolution.
+# The wordmark stays neutral; a hue here would flatten the face-versus-wall
+# contrast that carries the depth. ACCENT is only for the intro scenes.
 SHADES = ["#4a5058", "#7d8590", "#b1bac4", "#f0f6fc"]
-# Semantic accents for the intro scenes -- GitHub's own status colours, so they
-# read as state (ok / working / attention / alarm) rather than as decoration. The
-# wordmark itself stays neutral: its shading IS the ramp, and a hue there would
-# flatten the face-versus-wall contrast that carries the depth.
-ACCENT = {"ok": "#3fb950", "info": "#79c0ff", "warn": "#d29922", "bad": "#f85149"}
 # Ramp index (1..13) -> shade bucket; index 0 is blank and never drawn. The cuts
 # are set off the measured histogram, not an even split of the ramp: the fixed
 # light puts 79% of inked cells on indices 9 and 10 and nothing above 10, so an
@@ -594,7 +586,7 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
     for i, dot in enumerate(DOTS):
         parts.append(f'<circle cx="{PAD + i * 18}" cy="{TITLEBAR_H / 2}" r="5" fill="{dot}"/>')
     parts.append(f'<text x="{width / 2:.0f}" y="{TITLEBAR_H / 2 + 4:.0f}" fill="{TITLE_TEXT}" '
-                 f'font-size="11.5" text-anchor="middle">KJ@AI-INFRA: ~$ ./wordmark.sh --3d</text>')
+                 f'font-size="11.5" text-anchor="middle">KJ@AI-ENGINEER: ~$ ./wordmark.sh --3d</text>')
 
     def frame_group(grid: np.ndarray, extra: str = "") -> str:
         """One <text> per stretch of same-shade characters.

@@ -2,18 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
-import sys
 import xml.etree.ElementTree as ET
-
-from contributions import load_data
 
 ROOT = Path(__file__).resolve().parents[1]
 SVG_DIR = ROOT / "assets"
-EXPECTED = ["kj-hero.svg", "kj-wordmark.svg", "kj-system-card.svg", "kj-system-map.svg", "contribution-heatmap.svg"]
+EXPECTED = ["kj-wordmark.svg", "kj-agent-cli.svg"]
 
 
 def main() -> None:
-    load_data(ROOT / "data/contributions.json")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     for name in EXPECTED:
         path = SVG_DIR / name

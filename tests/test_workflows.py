@@ -5,13 +5,21 @@ from pathlib import Path
 import yaml
 
 
-def test_workflows_have_explicit_safe_permissions() -> None:
-    update = yaml.safe_load(Path(".github/workflows/update-profile-art.yml").read_text(encoding="utf-8"))
-    validate = yaml.safe_load(Path(".github/workflows/validate-profile.yml").read_text(encoding="utf-8"))
-    assert update["permissions"] == {"contents": "write"}
-    assert validate["permissions"] == {"contents": "read"}
-    assert "workflow_dispatch" in update[True] or "workflow_dispatch" in update.get("on", {})
-    update_text = Path(".github/workflows/update-profile-art.yml").read_text(encoding="utf-8")
-    assert "git add data/contributions.json assets/contribution-heatmap.svg" in update_text
-    assert "git add ." not in update_text
-    assert "PAT" not in update_text
+def test_validate_workflow_has_explicit_safe_permissions() -> None:
+    path = Path(".github/workflows/validate-profile.yml")
+    workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert workflow["permissions"] == {"contents": "read"}
+    text = path.read_text(encoding="utf-8")
+    assert "PAT" not in text
+    assert "git add ." not in text
+
+
+def test_no_workflow_writes_to_the_repo() -> None:
+    """The contribution refresh job was the only writer, and it is gone.
+
+    Anything reintroducing `contents: write` should be a deliberate decision, not
+    something that arrives with a copied workflow.
+    """
+    for path in Path(".github/workflows").glob("*.yml"):
+        workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+        assert workflow["permissions"] == {"contents": "read"}, path

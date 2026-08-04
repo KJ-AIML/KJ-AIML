@@ -5,7 +5,6 @@ on:
     paths:
       - "README.md"
       - "assets/**"
-      - "data/**"
       - "scripts/**"
       - "tests/**"
       - ".github/workflows/**"
@@ -13,7 +12,6 @@ on:
     paths:
       - "README.md"
       - "assets/**"
-      - "data/**"
       - "scripts/**"
       - "tests/**"
       - ".github/workflows/**"

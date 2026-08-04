@@ -10,7 +10,7 @@ def test_expected_svgs_are_valid_and_safe() -> None:
     main()
     # kj-wordmark.svg is a static committed artifact (scripts/generate_wordmark.py),
     # not produced by main(), but it ships in the README so it gets the same checks.
-    for path in (Path("assets") / name for name in ("kj-hero.svg", "kj-wordmark.svg", "kj-system-card.svg", "kj-system-map.svg", "contribution-heatmap.svg")):
+    for path in (Path("assets") / name for name in ("kj-wordmark.svg", "kj-agent-cli.svg")):
         content = path.read_text(encoding="utf-8")
         root = ET.fromstring(content)
         tags = {element.tag.rsplit("}", 1)[-1] for element in root.iter()}

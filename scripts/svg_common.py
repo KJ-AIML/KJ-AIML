@@ -16,12 +16,17 @@ PANEL = "#161b22"       # elevated surfaces inside a window
 BORDER = "#30363d"      # window frame and rules
 TEXT = "#c9d1d9"        # body ink
 SIGNAL = "#e6edf3"      # brightest step, for the line that matters most
-INK = "#c9d1d9"         # same weight as body text
 DIM = "#8b949e"         # de-emphasised but still readable
 MUTED = "#7d8590"       # metadata, captions, titlebar labels
 
 DOTS = ["#ff5f56", "#ffbd2e", "#27c93f"]
 CHROME_H = 30           # titlebar height; content sits below it
+
+# Colour is reserved for state, never decoration -- GitHub's own status palette,
+# so a row reads as a condition rather than as styling.
+ACCENT = {"ok": "#3fb950", "info": "#79c0ff", "warn": "#d29922", "bad": "#f85149"}
+
+HOST = "KJ@AI-ENGINEER"  # the shell prompt every panel and README header uses
 
 
 def xml(value: object) -> str:
@@ -39,9 +44,11 @@ def svg_head(title: str, description: str, width: int, height: int) -> str:
     .muted {{ fill: {MUTED}; }}
     .text {{ fill: {TEXT}; }}
     .signal {{ fill: {SIGNAL}; }}
-    .ink {{ fill: {INK}; }}
     .dim {{ fill: {DIM}; }}
-    @media (prefers-reduced-motion: reduce) {{ .animated {{ animation: none !important; }} }}
+    .ok {{ fill: {ACCENT["ok"]}; }}
+    .info {{ fill: {ACCENT["info"]}; }}
+    .warn {{ fill: {ACCENT["warn"]}; }}
+    .bad {{ fill: {ACCENT["bad"]}; }}
   </style>
 '''
 

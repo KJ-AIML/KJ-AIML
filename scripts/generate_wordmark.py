@@ -80,6 +80,14 @@ FONT_CANDIDATES = [
 ]
 FONT_INDEX = int(os.environ.get("WORDMARK_FONT_INDEX", 0))   # face within a .ttc
 TEXT = os.environ.get("WORDMARK_TEXT", "KJ-AIML")
+INTRO_WORD_COLS = {
+    "WELCOME": 91,
+    "TO": 55,
+    "MY": 55,
+    "AI": 55,
+    "WORLD": 91,
+}
+REST_YAW = math.radians(-13)
 
 MASK_H = 300            # glyph raster height in mask px (drives point density)
 TRACKING = 0.20         # extra letter-spacing, in em. the gaps must survive the
@@ -124,12 +132,11 @@ TITLEBAR_H = 30
 SCENE_STATUS = 1.9      # rows tick in and check off
 SCENE_ALERT = 2.0       # panels pile up over the readout
 SCENE_CLEAR = 0.3       # screen empties
-# Each word is set as real text, not spelled out of particles: at this size the
-# dot grid could only afford ~1 dot per stroke, which is what made it hard to
-# read. The particles are debris now -- they converge into the word, dissolve as
-# the text resolves, and blow out again. Legibility comes from the glyphs.
-WORDS = [("Welcome", "s3"), ("To", "s3"), ("My", "s3"),
-         ("AI", "info"), ("World", "ok")]
+# Each word uses the final mark's projected 3D ASCII material. Particles remain
+# transition debris: they converge, disappear while the form is readable, then
+# blow outward toward the next station.
+WORDS = [("WELCOME", "s3"), ("TO", "s3"), ("MY", "s3"),
+         ("AI", "info"), ("WORLD", "ok")]
 WORD_HOLD = 0.95        # word legible before it goes -- the readability knob
 WORD_BURST = 0.35       # word -> scatter -> next word
 BOOT_FILL = 1.5         # seconds spent filling the bar
@@ -161,10 +168,10 @@ def font_path() -> str:
 
 
 # ---------------------------------------------------------------- point shell
-def build_shell() -> tuple[np.ndarray, np.ndarray]:
-    """Rasterize TEXT, then return (points Nx3, normals Nx3) for its surface."""
+def build_shell(text: str = TEXT) -> tuple[np.ndarray, np.ndarray]:
+    """Rasterize text, then return (points Nx3, normals Nx3) for its surface."""
     path = font_path()
-    probe = TEXT.replace("\n", "")
+    probe = text.replace("\n", "")
     size = MASK_H
     for _ in range(40):                       # shrink until one line fits the raster
         font = ImageFont.truetype(path, size, index=FONT_INDEX)
@@ -174,7 +181,7 @@ def build_shell() -> tuple[np.ndarray, np.ndarray]:
         size = int(size * 0.92)
     height = bottom - top
     track = int(round(TRACKING * size))
-    lines = TEXT.split("\n")
+    lines = text.split("\n")
     line_h = int(round(height * LINE_GAP))
 
     def line_w(s: str) -> float:
@@ -301,6 +308,40 @@ def rasterize(q, scale: float, cx: float, cy: float) -> np.ndarray:
 def grid_rows(grid: np.ndarray) -> list[str]:
     """Ramp indices back to text, for --preview."""
     return ["".join(RAMP[i] for i in r) for r in grid]
+
+
+def render_text_grid(text: str, cols: int, yaw: float = REST_YAW,
+                     max_rows: int | None = None) -> np.ndarray:
+    """Render one text object with the wordmark material at a requested width."""
+    global COLS, ROWS
+    previous_cols, previous_rows = COLS, ROWS
+    try:
+        COLS = cols
+        points, normals = build_shell(text)
+        projected = project(points, normals, yaw)
+        if max_rows is None:
+            scale, cx, cy = fit([projected])
+        else:
+            x, y = projected[0], projected[1]
+            x0, x1, y0, y1 = x.min(), x.max(), y.min(), y.max()
+            aspect = CELL_W / CELL_H
+            width_scale = FIT * (cols - 1) / (x1 - x0)
+            height_scale = (max_rows - 1 - 2 * ROW_MARGIN) / ((y1 - y0) * aspect)
+            scale = min(width_scale, height_scale)
+            ROWS = max_rows
+            cx = (cols - 1) / 2.0 - (x0 + x1) / 2.0 * scale
+            cy = (max_rows - 1) / 2.0 - (y0 + y1) / 2.0 * scale * aspect
+        return rasterize(projected, scale, cx, cy)
+    finally:
+        COLS, ROWS = previous_cols, previous_rows
+
+
+def intro_word_grids(max_rows: int) -> dict[str, np.ndarray]:
+    """Render approved intro forms inside the final wordmark's art height."""
+    return {
+        word: render_text_grid(word, cols, REST_YAW, max_rows)
+        for word, cols in INTRO_WORD_COLS.items()
+    }
 
 
 # -------------------------------------------------------------- boot sequence
@@ -438,6 +479,45 @@ def scene_alerts(art_top: float, art_h: float, width: float) -> str:
     return "".join(parts)
 
 
+def grid_group(grid: np.ndarray, art_top: float, x_offset: float,
+               extra: str = "") -> str:
+    """Emit a shaded ASCII grid as compact runs of SVG text cells."""
+    font_size = CELL_H * 0.92
+    out_rows: list[str] = []
+    for ry, row in enumerate(grid):
+        y = art_top + ry * CELL_H + CELL_H * 0.78
+        run: list[str] = []
+        run_start = 0
+        bucket = -1
+
+        def flush() -> None:
+            if not run:
+                return
+            body = "".join(run).rstrip()
+            if body:
+                out_rows.append(
+                    f'<text xml:space="preserve" x="{x_offset + run_start * CELL_W:.0f}" '
+                    f'y="{y:.1f}" font-size="{font_size:.1f}" class="s{bucket}" '
+                    f'textLength="{len(body) * CELL_W:.0f}" '
+                    f'lengthAdjust="spacing">{html.escape(body)}</text>'
+                )
+            run.clear()
+
+        for cx_i, value in enumerate(row):
+            if value == 0:
+                if run:
+                    run.append(" ")
+                continue
+            shade = BUCKETS[value]
+            if run and shade != bucket:
+                flush()
+            if not run:
+                run_start, bucket = cx_i, shade
+            run.append(RAMP[value])
+        flush()
+    return f"<g{extra}>" + "".join(out_rows) + "</g>"
+
+
 def boot_sequence(rest: np.ndarray, art_top: float, art_w: float, art_h: float,
                   width: float) -> str:
     """Loading bar -> burst -> reassembly into the wordmark. Plays once."""
@@ -481,24 +561,22 @@ def boot_sequence(rest: np.ndarray, art_top: float, art_w: float, art_h: float,
     def at(t: float) -> str:
         return f"{t / span:.4f}"
 
-    # Each word is real text. A dot grid at this size affords only ~1 dot per
-    # stroke, which is what made the particle-spelled version hard to read.
-    longest = max(len(word) for word, _ in WORDS)
-    word_font = min(width * 0.62 / (0.62 * longest), art_h * 0.34)
-    baseline = art_top + art_h / 2 + word_font * 0.34
+    word_grids = intro_word_grids(rest.shape[0])
     k_in = 0.18 / WORD_CYCLE
     k_hold = WORD_HOLD / WORD_CYCLE
     k_out = (WORD_HOLD + 0.12) / WORD_CYCLE
-    for w, (word, tone) in enumerate(WORDS):
-        parts.append(
-            f'<text x="{width / 2:.0f}" y="{baseline:.0f}" font-size="{word_font:.0f}" '
-            f'font-weight="700" text-anchor="middle" class="{tone}" opacity="0">'
-            f'{html.escape(word)}'
-            f'<animate attributeName="opacity" values="0;1;1;0;0" '
-            f'keyTimes="0;{k_in:.4f};{k_hold:.4f};{k_out:.4f};1" '
-            f'dur="{WORD_CYCLE:.2f}s" begin="{WORDS_START + w * WORD_CYCLE:.2f}s" '
-            f'fill="freeze"/></text>'
+    for w, (word, _tone) in enumerate(WORDS):
+        grid = word_grids[word]
+        x_offset = PAD + (COLS - grid.shape[1]) * CELL_W / 2
+        anim = (f'<animate attributeName="opacity" values="0;1;1;0;0" '
+                f'keyTimes="0;{k_in:.4f};{k_hold:.4f};{k_out:.4f};1" '
+                f'dur="{WORD_CYCLE:.2f}s" begin="{WORDS_START + w * WORD_CYCLE:.2f}s" '
+                f'fill="freeze"/>')
+        group = grid_group(
+            grid, art_top, x_offset,
+            f' data-intro-word="{word}" opacity="0"',
         )
+        parts.append(group.replace("</g>", anim + "</g>"))
 
     for i in range(PARTICLES):
         seat = i % BAR_CELLS
@@ -561,7 +639,6 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
     width = art_w + PAD * 2
     height = TITLEBAR_H + art_h + PAD
     art_top = TITLEBAR_H + PAD * 0.3
-    font_size = CELL_H * 0.92
     count = len(frames)
 
     parts = [
@@ -589,45 +666,7 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
                  f'font-size="11.5" text-anchor="middle">KJ@AI-ENGINEER: ~$ ./wordmark.sh --3d</text>')
 
     def frame_group(grid: np.ndarray, extra: str = "") -> str:
-        """One <text> per stretch of same-shade characters.
-
-        Blank cells stay inside the current run rather than breaking it -- they
-        cost one space each but splitting on them would multiply the element
-        count for no visible gain. Trailing blanks are trimmed when a run closes.
-        """
-        out_rows = []
-        for ry, row in enumerate(grid):
-            y = art_top + ry * CELL_H + CELL_H * 0.78
-            run: list[str] = []
-            run_start = 0
-            bucket = -1
-
-            def flush() -> None:
-                if not run:
-                    return
-                body = "".join(run).rstrip()
-                if body:
-                    out_rows.append(
-                        f'<text xml:space="preserve" x="{PAD + run_start * CELL_W:.0f}" '
-                        f'y="{y:.1f}" font-size="{font_size:.1f}" class="s{bucket}" '
-                        f'textLength="{len(body) * CELL_W:.0f}" '
-                        f'lengthAdjust="spacing">{html.escape(body)}</text>'
-                    )
-                run.clear()
-
-            for cx_i, value in enumerate(row):
-                if value == 0:
-                    if run:
-                        run.append(" ")
-                    continue
-                shade = BUCKETS[value]
-                if run and shade != bucket:
-                    flush()
-                if not run:
-                    run_start, bucket = cx_i, shade
-                run.append(RAMP[value])
-            flush()
-        return f"<g{extra}>" + "".join(out_rows) + "</g>"
+        return grid_group(grid, art_top, PAD, extra)
 
     if mode == "static":                      # frozen frame 0 -- STATIC=1 fallback
         parts.append(frame_group(frames[0]))
@@ -670,7 +709,7 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
 def generate(out: Path, mode: str = "rock", frames_count: int | None = None,
              dur: float | None = None, preview: bool = False) -> None:
     P, N = build_shell()
-    rest = math.radians(-13)                  # the 3/4 pose the wordmark rests in
+    rest = REST_YAW                           # the 3/4 pose the wordmark rests in
     if mode == "spin":
         count = frames_count or 36
         yaws = [rest + 2 * math.pi * i / count for i in range(count)]

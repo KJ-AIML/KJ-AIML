@@ -53,3 +53,54 @@ def test_agent_panel_waits_for_the_wordmark() -> None:
         f"agent panel starts at {agent.HANDOFF}s but the wordmark boots until "
         f"{wordmark.BOOT_END}s — the two panels would compete"
     )
+
+
+def test_intro_word_widths_match_the_approved_system() -> None:
+    wordmark = importlib.import_module("generate_wordmark")
+    assert wordmark.INTRO_WORD_COLS == {
+        "WELCOME": 91,
+        "TO": 55,
+        "MY": 55,
+        "AI": 55,
+        "WORLD": 91,
+    }
+
+
+@pytest.mark.parametrize("word, cols", [
+    ("WELCOME", 91),
+    ("TO", 55),
+    ("MY", 55),
+    ("AI", 55),
+    ("WORLD", 91),
+])
+def test_intro_word_grid_uses_approved_width(word: str, cols: int) -> None:
+    wordmark = importlib.import_module("generate_wordmark")
+    grid = wordmark.render_text_grid(word, cols, wordmark.REST_YAW)
+    assert grid.shape[1] == cols
+    assert grid.any()
+
+
+def test_intro_words_are_ascii_groups_not_solid_text(tmp_path: Path) -> None:
+    fresh = tmp_path / "kj-wordmark.svg"
+    subprocess.run(
+        [sys.executable, "scripts/generate_wordmark.py", "--out", str(fresh)],
+        check=True,
+        capture_output=True,
+    )
+    svg = fresh.read_text(encoding="utf-8")
+    for word in ("WELCOME", "TO", "MY", "AI", "WORLD"):
+        assert f'data-intro-word="{word}"' in svg
+    assert ">Welcome<" not in svg
+    assert ">World<" not in svg
+
+
+def test_intro_word_grids_fit_the_final_art_height() -> None:
+    wordmark = importlib.import_module("generate_wordmark")
+    final_grid = wordmark.render_text_grid(wordmark.TEXT, wordmark.COLS)
+    for word, grid in wordmark.intro_word_grids(final_grid.shape[0]).items():
+        assert grid.shape[1] == wordmark.INTRO_WORD_COLS[word]
+        assert grid.shape[0] == final_grid.shape[0]
+        occupied = grid.nonzero()[1]
+        left = int(occupied.min())
+        right = grid.shape[1] - 1 - int(occupied.max())
+        assert abs(left - right) <= 2

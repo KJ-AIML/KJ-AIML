@@ -1,0 +1,5 @@
+# Generated SVGs keep identical line endings on every OS.
+*.svg text eol=lf
+# Preserve the upstream license bytes, including its original whitespace.
+fonts/OFL.txt -text whitespace=-blank-at-eol
+fonts/*.ttf binary

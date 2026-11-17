@@ -5,6 +5,7 @@ on:
     paths:
       - "README.md"
       - "assets/**"
+      - "docs/**"
       - "scripts/**"
       - "tests/**"
       - ".github/workflows/**"
@@ -12,6 +13,7 @@ on:
     paths:
       - "README.md"
       - "assets/**"
+      - "docs/**"
       - "scripts/**"
       - "tests/**"
       - ".github/workflows/**"
@@ -21,7 +23,11 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
       - name: Check out profile
@@ -31,12 +37,12 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: python -m pip install -r scripts/requirements.txt
+        run: python -m pip install -r scripts/requirements.txt -r scripts/requirements-wordmark.txt
       - name: Run tests
         run: python -m pytest -q
-      - name: Regenerate and verify deterministic assets
-        run: |
-          python scripts/generate_all.py
-          git diff --exit-code -- assets
+      - name: Regenerate both static assets
+        run: python scripts/generate_all.py
+      - name: Verify committed assets are fresh
+        run: git diff --exit-code -- assets
       - name: Validate profile references and SVG safety
         run: python scripts/validate_profile.py

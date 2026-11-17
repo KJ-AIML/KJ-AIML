@@ -13,8 +13,8 @@ import pytest
 # Required imports intentionally fail collection when renderer dependencies are
 # absent. CI and the documented local command install both requirements files.
 from generate_agent_cli import generate as generate_agent_cli
-from generate_braille import generate as generate_wordmark
-from scripts.validate_profile import ANIMATED_ASSET, ASSET_NAMES, ROOT, validate_svg
+from generate_hello import generate as generate_hello
+from scripts.validate_profile import ANIMATED_ASSET, ASSET_NAMES, ROOT, STILL_ASSET, validate_svg
 
 
 @pytest.fixture(scope="module")
@@ -63,7 +63,7 @@ def test_repeated_and_explicit_static_builds_are_identical(generated_runs: list[
 
 
 @pytest.mark.parametrize(("name", "generate"), [
-    ("kj-wordmark.svg", generate_wordmark),
+    (STILL_ASSET, generate_hello),
     ("kj-agent-cli.svg", generate_agent_cli),
 ])
 def test_public_generator_defaults_are_static(name, generate, tmp_path, monkeypatch) -> None:

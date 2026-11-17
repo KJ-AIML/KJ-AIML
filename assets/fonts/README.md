@@ -8,7 +8,7 @@ the [SIL Open Font License 1.1](OFL.txt).
 The generator uses this local file by default on every OS. It never searches
 system fonts. `WORDMARK_FONT` is an explicit development override and must not
 be set when rebuilding committed assets. The font determines the three-dimensional
-letter geometry; the resulting SVG contains ordinary ASCII text and needs no
+letter geometry; the resulting SVG draws the letters as dots and needs no
 external font download.
 
 - Source repository: `google/fonts`

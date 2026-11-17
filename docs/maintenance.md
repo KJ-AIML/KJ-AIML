@@ -12,11 +12,10 @@ python -m pytest -q
 git diff --check
 ```
 
-`generate_all.py` rebuilds **all three** committed SVGs, using paths resolved
-from the script's location. It works from another working directory. Static and
-animated wordmarks have separate filenames; the optional CLI panel is static.
-`STATIC=1` is a compatibility alias for the same complete build. Select the static
-artifact by filename, not by replacing the animated asset's content.
+`generate_all.py` rebuilds every generated image: the animated hero, its still,
+the optional CLI panel, and the icons in `assets/icons/`. Paths are resolved from
+the script's location, so it works from any working directory. `STATIC=1` is
+accepted and changes nothing; the still and the animation have separate filenames.
 
 If Python is managed through uv, the equivalent command prefix is:
 
@@ -24,46 +23,59 @@ If Python is managed through uv, the equivalent command prefix is:
 uv run --no-project --python 3.12 --with-requirements scripts/requirements.txt --with-requirements scripts/requirements-wordmark.txt python scripts/generate_all.py
 ```
 
-Run the validator and pytest with the same dependency environment. Inspect changed
-artwork at its full width and at a phone-sized width before committing it. A static
-SVG render checks the artwork; it does not replace a live GitHub layout check.
+Run the validator and pytest in the same environment. After changing artwork,
+watch the hero play in a browser and look at the page at desktop and phone
+widths before committing. The tests check geometry and safety; they do not
+judge how it looks.
 
 ## Editing content
 
-Keep essential facts in `README.md`. Update project descriptions after checking
-their public source and quick start. Use specific work and linked contributions
-as evidence; avoid unverified adoption, performance, or employment claims.
-Record the source and review date in [the source notes](profile-refresh/sources.md).
+Keep essential facts in `README.md`. Update a project's sentence after checking
+its public source. Use specific work and linked contributions as evidence; avoid
+unverified adoption, performance, or employment claims. Record the source and
+review date in [the source notes](profile-refresh/sources.md).
 
-The optional CLI illustration is defined in `scripts/generate_agent_cli.py`.
-Changing its content requires regenerating the SVG. It is documented on the
-design page rather than embedded in the profile's main reading flow.
+Each project card has one sentence so the two-column grid stays readable on a
+phone. To add a project, add a 760 by 475 picture to `assets/projects/`, record
+where it came from in that folder's README, and add a card.
+
+The optional CLI illustration is defined in `scripts/generate_agent_cli.py`. It
+is shown on the design page, not in the profile.
 
 ## Reproducible artwork
 
-The profile renderer is `scripts/generate_braille.py`. It uses the bundled font
-in `assets/fonts/` and the locally stored hand fields in `scripts/data/`. Keep
-their source records with them. Rebuild all assets after changing the generator.
+- **Hero:** `scripts/generate_hello.py`, described in
+  [the renderer notes](hello-hero.md). It uses the font in `assets/fonts/` and the
+  hand fields in `scripts/data/`.
+- **Icons:** `scripts/generate_icons.py`, from the glyphs and colours in
+  `scripts/data/icons.json`. To add a technology, add its entry there and rebuild.
+- **Company marks and project pictures** are committed as they are and are not
+  regenerated. Their origins are in the READMEs beside them.
 
-The `intro` mode reaches its final still composition in six seconds. Both hero
-variants use an 855 by 300 canvas. The older `generate_wordmark.py` remains an
-independent ASCII experiment; its modes and `WORDMARK_*` overrides do not control
-the profile build. Write those experiments to separate files. Validation permits
-the dedicated hero's opacity, fill, and translation animations, while rejecting
-scripts, external resources, link mutation, and animation in static artifacts.
-See [the renderer notes](3d-ascii-wordmark.md).
+Keep each source record with its data. Rebuild everything after changing a
+generator; a stale image fails the tests and CI.
+
+Validation allows the hero to animate opacity, sliding, rotation, and a
+gradient's endpoints, and to carry one reduced-motion rule that shows its final
+frame. It rejects scripts, external resources, link changes, scaling, any other
+at-rule, and any animation in the static files. The hero must keep a visible
+final frame for viewers without SVG animation.
+
+`scripts/generate_wordmark.py` is the earlier ASCII renderer. The hero uses its
+text extrusion; see [the note on it](3d-ascii-wordmark.md).
 
 ## CI
 
 `Validate profile` installs the complete dependency set on Ubuntu and Windows.
-Tests cover generation from an unrelated working directory, deterministic output,
-all committed assets' freshness, SVG safety, reduced-motion source references,
-and read-only workflow permissions. Missing renderer dependencies fail instead of
-silently skipping the wordmark checks.
+Tests cover generation from an unrelated working directory, deterministic
+output, freshness of every generated image, SVG safety, the hero's motion and
+fallback, local references including the reduced-motion source, and read-only
+workflow permissions. Missing renderer dependencies fail instead of skipping.
 
 Freshness comparisons normalize checkout line endings so Windows CRLF does not
-produce a false difference; repeated generated output must still be byte-identical.
-The workflow also regenerates all assets and checks that Git sees no asset changes.
+produce a false difference; repeated output must still be byte-identical. The
+workflow also regenerates all images and checks that Git sees no change in
+`assets/`.
 
 The workflow has `contents: read` and never publishes or commits generated files.
 Action references are pinned to full commit SHAs. When upgrading them, verify the

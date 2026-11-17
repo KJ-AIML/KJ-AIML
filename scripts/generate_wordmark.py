@@ -741,7 +741,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=["spin", "once", "rock", "static"],
                         default="static", help="static by default; other modes are legacy animations")
-    parser.add_argument("--out", default=str(ROOT / "assets/kj-wordmark.svg"))
+    parser.add_argument("--out", required=True, help="output file; keep experiments out of assets/")
     parser.add_argument("--frames", type=int, default=None)
     parser.add_argument("--dur", type=float, default=None)
     parser.add_argument("--preview", action="store_true", help="print frame 0 to stdout")

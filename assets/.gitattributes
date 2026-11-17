@@ -3,3 +3,6 @@
 # Preserve the upstream license bytes, including its original whitespace.
 fonts/OFL.txt -text whitespace=-blank-at-eol
 fonts/*.ttf binary
+# Company marks and project pictures are stored byte for byte.
+*.png binary
+*.jpg binary

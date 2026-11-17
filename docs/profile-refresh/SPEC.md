@@ -119,3 +119,29 @@ widths, verify the finite timeline reaches the still frame, run the existing
 generation/freshness/safety checks, and refresh the local preview. Browser
 playback remains a separate manual check when automated browser access is
 unavailable. Rollback is limited to this visual change; no publishing is included.
+
+## Hero and layout revision (owner-approved, 2026-11-17)
+
+The owner reviewed live previews and replaced the sculpted `KJ-AIML` hero. Where
+this section and the ones above differ, this one applies.
+
+- **Hero:** the pi-ter hands stay and are now articulated, with an elbow, a
+  wrist, and finger joints, inside the profile's terminal window. They touch, a
+  spark forms the handle `kjct0s_` as an extruded dot wordmark, and `Hello KJ`
+  appears. The owner chose the handle over `KJ-AIML`. The animation and its still
+  share an 855 by 450 canvas.
+- **Rules kept:** essential facts stay in Markdown; reduced motion selects the
+  still; the animated file shows its final frame without SVG animation; nothing
+  loops; no scripts or external resources; the 500 KB asset limit.
+- **Validation:** the hero may also rotate groups and move a gradient's
+  endpoints. Scaling, skewing, and every other animated attribute stay rejected.
+- **Companies:** the owner is also Co-founder & CTO of Talvyn Labs, which is
+  named and linked ahead of Axtra Intellion.
+- **Layout:** link buttons under the headline; six projects as picture cards
+  with one sentence each; a row of technology icons with the full stack folded
+  beneath it. Every image is a local file. Icons use each brand's colour on a
+  dark tile, which the owner picked over grey marks and over solid colour tiles.
+- **Files:** `scripts/generate_hello.py` and `scripts/generate_icons.py` are
+  added. `scripts/generate_braille.py` and the two `kj-wordmark` images are removed.
+- **Not included:** publishing, GitHub account settings, pinned repositories,
+  and other repositories.

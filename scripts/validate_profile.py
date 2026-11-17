@@ -15,8 +15,10 @@ from urllib.parse import unquote, urlsplit
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-ANIMATED_ASSET = "kj-wordmark-animated.svg"
-ASSET_NAMES = ("kj-wordmark.svg", "kj-agent-cli.svg", ANIMATED_ASSET)
+ANIMATED_ASSET = "kj-hello.svg"
+STILL_ASSET = "kj-hello-still.svg"
+ASSET_NAMES = (STILL_ASSET, "kj-agent-cli.svg", ANIMATED_ASSET)
+HERO_MAX_HEIGHT = 450          # at the 855px display width
 SVG_NS = "http://www.w3.org/2000/svg"
 MAX_SVG_BYTES = 500_000
 STATIC_TAGS = {
@@ -25,17 +27,24 @@ STATIC_TAGS = {
     "radialGradient", "stop",
 }
 ANIMATION_TARGETS = {
-    "animate": {"opacity"},
+    "animate": {"opacity", "x1", "x2"},
     "set": {"opacity", "fill"},
     "animateTransform": {"transform"},
 }
+# Joints rotate and arms slide. Scaling and skewing could hide or distort text.
+TRANSFORM_ANIMATIONS = {"translate", "rotate"}
+# A gradient's endpoints may move (the glint across the finished name); nothing else may.
+GRADIENT_ENDPOINTS = {"x1", "x2"}
 STYLE_PROPERTIES = {
     "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin",
-    "stroke-dasharray", "font-family", "font-size", "font-weight", "text-anchor",
+    "stroke-dasharray", "stroke-dashoffset", "font-family", "font-size", "font-weight", "text-anchor",
     "letter-spacing", "white-space", "opacity", "fill-opacity", "stroke-opacity",
     "stop-color", "stop-opacity", "paint-order", "dominant-baseline",
 }
 HIDING_PROPERTIES = {"clip", "clip-path", "mask", "filter", "display", "visibility"}
+ICON_TAGS = {"svg", "title", "g", "path", "rect", "circle", "ellipse", "text"}
+MAX_ICON_BYTES = 20_000
+UNSAFE_XML = br"<!\s*(?:DOCTYPE|ENTITY)\b|<\?(?!xml(?:\s|\?>))"
 
 
 def _number(value: str, label: str, *, positive: bool = False) -> float:
@@ -63,10 +72,39 @@ def _declarations(style: str) -> dict[str, str]:
     return declarations
 
 
-def _css_rules(root: ET.Element) -> list[tuple[str, dict[str, str]]]:
+SIMPLE_SELECTOR = r"[.#]?[A-Za-z_][\w-]*"
+REDUCED_MOTION = re.compile(
+    r"@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}")
+
+
+def _check_reduced_motion(block: str) -> None:
+    """The one at-rule the animated hero may carry: show the final frame to visitors who ask for less motion.
+
+    It may hide the animated scene, force content visible, and paint strokes a flat
+    colour. It may not hide anything else, so it cannot be used to conceal text.
+    """
+    for selectors, body in re.findall(r"([^{}]+)\{([^{}]*)\}", block):
+        names = [selector.strip() for selector in selectors.split(",")]
+        if not all(re.fullmatch(SIMPLE_SELECTOR, name) for name in names):
+            raise ValueError(f"unsupported reduced-motion selector: {selectors!r}")
+        for declaration in filter(str.strip, body.split(";")):
+            name, _, value = declaration.partition(":")
+            name, value = name.strip().lower(), value.replace("!important", "").strip()
+            hides_scene = name == "opacity" and value == "0" and names == ["#animated-scene"]
+            shows = name == "opacity" and value == "1"
+            flat_stroke = name == "stroke" and re.fullmatch(r"#[0-9a-fA-F]{6}", value)
+            if not (hides_scene or shows or flat_stroke):
+                raise ValueError(f"unsupported reduced-motion style: {declaration!r}")
+
+
+def _css_rules(root: ET.Element, *, allow_animation: bool = False) -> list[tuple[str, dict[str, str]]]:
     rules = []
     for style in root.iter(f"{{{SVG_NS}}}style"):
         css = re.sub(r"/\*.*?\*/", "", "".join(style.itertext()), flags=re.S)
+        if allow_animation:
+            for block in REDUCED_MOTION.findall(css):
+                _check_reduced_motion(block)
+            css = REDUCED_MOTION.sub("", css)
         pattern = r"([^{}]+)\{([^{}]*)\}"
         if re.sub(pattern, "", css).strip():
             raise ValueError("unsupported SVG stylesheet")
@@ -74,7 +112,7 @@ def _css_rules(root: ET.Element) -> list[tuple[str, dict[str, str]]]:
             declarations = _declarations(body)
             for selector in selectors.split(","):
                 selector = selector.strip()
-                if not re.fullmatch(r"[.#]?[A-Za-z_][\w-]*", selector):
+                if not re.fullmatch(SIMPLE_SELECTOR, selector):
                     raise ValueError(f"unsupported SVG selector: {selector!r}")
                 rules.append((selector, declarations))
     # Presentation attributes < tag rules < class rules < ID rules < inline style.
@@ -105,7 +143,7 @@ def validate_svg(path: Path, *, allow_animation: bool = False) -> ET.Element:
     if path.stat().st_size >= MAX_SVG_BYTES:
         raise ValueError(f"asset too large: {path}")
     data = path.read_bytes()
-    if re.search(br"<!\s*(?:DOCTYPE|ENTITY)\b|<\?(?!xml(?:\s|\?>))", data, re.I):
+    if re.search(UNSAFE_XML, data, re.I):
         raise ValueError(f"unsupported XML declaration: {path}")
     root = ET.fromstring(data)
     if root.tag != f"{{{SVG_NS}}}svg":
@@ -117,18 +155,19 @@ def validate_svg(path: Path, *, allow_animation: bool = False) -> ET.Element:
     viewbox = [_number(value, "viewBox") for value in re.split(r"[\s,]+", root.get("viewBox", "").strip())]
     if viewbox != [0, 0, width, height]:
         raise ValueError(f"viewBox must match the SVG dimensions: {path}")
-    if path.name == "kj-wordmark.svg" and height * 855 / width > 300:
-        raise ValueError("wordmark exceeds 300px at its 855px display width")
+    if path.name in {STILL_ASSET, ANIMATED_ASSET} and height * 855 / width > HERO_MAX_HEIGHT:
+        raise ValueError(f"hero exceeds {HERO_MAX_HEIGHT}px at its 855px display width")
     for tag in ("title", "desc"):
         element = root.find(f"{{{SVG_NS}}}{tag}")
         if element is None or not "".join(element.itertext()).strip():
             raise ValueError(f"missing nonempty SVG {tag}: {path}")
 
     ids = {element.attrib["id"] for element in root.iter() if "id" in element.attrib}
-    rules = _css_rules(root)
+    rules = _css_rules(root, allow_animation=allow_animation)
     for _, declarations in rules:
         _check_values(declarations, ids, allow_animation=allow_animation)
     animation_count = 0
+    parents = {child: parent for parent in root.iter() for child in parent}
     for element in root.iter():
         tag = element.tag.removeprefix(f"{{{SVG_NS}}}")
         allowed_tags = STATIC_TAGS | (ANIMATION_TARGETS.keys() if allow_animation else set())
@@ -141,8 +180,13 @@ def validate_svg(path: Path, *, allow_animation: bool = False) -> ET.Element:
             target = element.get("attributeName")
             if target not in ANIMATION_TARGETS[tag]:
                 raise ValueError(f"unsupported animation target: {target}")
-            if tag == "animateTransform" and element.get("type") != "translate":
-                raise ValueError("only translation animations are supported")
+            if tag == "animateTransform" and element.get("type") not in TRANSFORM_ANIMATIONS:
+                raise ValueError("only translation and rotation animations are supported")
+            if target in GRADIENT_ENDPOINTS:
+                if parents[element].tag != f"{{{SVG_NS}}}linearGradient":
+                    raise ValueError("only a gradient's endpoints may be animated")
+                for value in element.get("values", "").split(";"):
+                    _number(value, "animated gradient endpoint")
             for timing in ("begin", "dur"):
                 if timing in element.attrib and not re.fullmatch(r"\d+(?:\.\d+)?s", element.attrib[timing]):
                     raise ValueError(f"unsupported animation timing: {element.attrib[timing]}")
@@ -194,6 +238,22 @@ def validate_svg(path: Path, *, allow_animation: bool = False) -> ET.Element:
     if not visible_text:
         raise ValueError(f"SVG has no visible text: {path}")
     return root
+
+
+def validate_icon(path: Path) -> None:
+    """Icons are tiny static marks: a title and a few shapes, nothing active, styled or external."""
+    data = path.read_bytes()
+    if len(data) >= MAX_ICON_BYTES or re.search(UNSAFE_XML, data, re.I):
+        raise ValueError(f"unsupported icon file: {path}")
+    root = ET.fromstring(data)
+    title = root.find(f"{{{SVG_NS}}}title")
+    if root.tag != f"{{{SVG_NS}}}svg" or title is None or not "".join(title.itertext()).strip():
+        raise ValueError(f"icon needs an SVG root and a title: {path}")
+    for element in root.iter():
+        tag = element.tag.removeprefix(f"{{{SVG_NS}}}")
+        if element.tag != f"{{{SVG_NS}}}{tag}" or tag not in ICON_TAGS or "style" in element.attrib:
+            raise ValueError(f"unsupported icon content in {path}: {element.tag}")
+        _check_values(element.attrib, set())
 
 
 class _HTMLReferences(HTMLParser):
@@ -264,6 +324,8 @@ def validate_local_references(document: Path, repository: Path) -> None:
 def validate_profile(repository: Path = ROOT) -> None:
     for name in ASSET_NAMES:
         validate_svg(repository / "assets" / name, allow_animation=name == ANIMATED_ASSET)
+    for icon in sorted((repository / "assets/icons").glob("*.svg")):
+        validate_icon(icon)
     for document in [repository / "README.md", *sorted((repository / "docs").rglob("*.md"))]:
         validate_local_references(document, repository)
     readme = (repository / "README.md").read_text(encoding="utf-8").lower()

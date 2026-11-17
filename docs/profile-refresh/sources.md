@@ -18,6 +18,7 @@ would require ongoing measurement.
 | Heli-Harness is published on npm | [npm package](https://www.npmjs.com/package/heli-harness) |
 | AXGA is a small Rust coding agent built for low-cost VPS hosting | [Repository](https://github.com/KJ-AIML/axga-harness-agent-rs), [v0.1.2 release](https://github.com/KJ-AIML/axga-harness-agent-rs/releases/tag/v0.1.2) |
 | Personal site and "open to opportunities and collaboration" | [kjsc.dev](https://www.kjsc.dev) |
+| Talvyn Labs is a Bangkok software house and product studio that builds AI agents, automation, websites, and web apps and keeps them running; its products include TalvynCRM and TalvynMesher | [talvynlabs.com](https://talvynlabs.com) |
 
 ## Owner-provided facts
 
@@ -26,6 +27,10 @@ for the headline, the "Production work" section, the Axtra Intellion (AXTL) role
 and description, the stack, and the 95%+ tag-recall figure. The owner chose to
 describe employer work by domain without naming employers in the README. The CV
 on kjsc.dev carries the employers and dates.
+
+On the same day the owner confirmed their role as Co-founder & CTO of Talvyn Labs,
+and chose the handle `kjct0s_`, their GitHub display name, for the hero in place
+of `KJ-AIML`.
 
 The AXTL staging site is not linked, because it returned 404 on 2026-11-17. Link
 it once a public page is live.
@@ -45,3 +50,15 @@ reference on 2026-11-17. The profile adapts its shaded hand fields and short
 reaching gesture at revision `45821bb0b1d1bf13036547681622ae879ef5af7a`.
 The local field format and exact source paths are recorded in
 [the artwork provenance](../../scripts/data/README.md).
+
+## Images
+
+Every image in the profile is a local file.
+
+- Technology marks come from Simple Icons (CC0 1.0); the version, colours, and
+  the exceptions are recorded with [the vendored data](../../scripts/data/README.md).
+- The company marks are the owner's companies' own images, listed in
+  [assets/icons](../../assets/icons/README.md).
+- Each project picture comes from that project's public repository, listed in
+  [assets/projects](../../assets/projects/README.md). The ALMS and AXGA cards are
+  typeset from examples in those READMEs and are not screen captures.

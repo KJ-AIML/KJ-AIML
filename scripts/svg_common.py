@@ -5,11 +5,9 @@ from __future__ import annotations
 from html import escape
 
 
-# Terminal palette. Hierarchy is carried by brightness rather than hue: the
-# wordmark shades an ASCII density ramp, and a saturated fill next to it flattens
-# the face-versus-wall contrast that reads as depth. The traffic-light dots and
-# the contribution greens are the only colour in the profile, and both mean
-# something. See docs/design-system.md.
+# Terminal palette. Brightness gives the ASCII wordmark its depth and keeps the
+# static companion illustration quiet. The titlebar dots retain the original
+# terminal identity; they are decorative marks, not interactive controls.
 BG = "#0d1117"          # base canvas / bottom of the panel gradient
 BG2 = "#111722"         # top of the panel gradient
 PANEL = "#161b22"       # elevated surfaces inside a window
@@ -22,11 +20,8 @@ MUTED = "#7d8590"       # metadata, captions, titlebar labels
 DOTS = ["#ff5f56", "#ffbd2e", "#27c93f"]
 CHROME_H = 30           # titlebar height; content sits below it
 
-# Colour is reserved for state, never decoration -- GitHub's own status palette,
-# so a row reads as a condition rather than as styling.
+# Semantic accents are retained for the explicit legacy wordmark animations.
 ACCENT = {"ok": "#3fb950", "info": "#79c0ff", "warn": "#d29922", "bad": "#f85149"}
-
-HOST = "KJ@AI-ENGINEER"  # the shell prompt every panel and README header uses
 
 
 def xml(value: object) -> str:

@@ -1,29 +1,19 @@
-"""Render "KJ-AIML" as an extruded 3D wordmark rasterized to ASCII, behind a
-boot sequence, emitted as a self-contained SMIL SVG (GitHub runs SVG animation
-in <img>, never JS).
+"""Render "KJ-AIML" as a compact, static 3D ASCII wordmark.
 
 Pipeline: draw the text with a bold TTF -> threshold to a mask -> extrude the
 mask along +z into a surface point shell (front cap, back cap, boundary walls)
 -> rotate / project each frame -> z-buffer splat into a character grid, char
 picked by Lambert shading of the surface normal. Rotation is a pre-rendered
-flipbook: one <g> per frame, cycled by a discrete opacity animation.
+flipbook only in the explicitly requested legacy modes (rock, spin, once).
+The committed asset uses one fully visible rest pose, without an intro.
 
-The intro plays once ahead of the loop: a status readout checks itself off,
-colour-coded alert panels bury it, the screen clears, then each word of WORDS
-resolves and blows apart. One particle set carries the debris through every
-word, seats into a loading bar, and finally reassembles as the wordmark. See
-docs/3d-ascii-wordmark.md.
+Regenerate both profile assets with ``python scripts/generate_all.py``.
+The bundled IBM Plex Mono Bold font fixes the raster geometry across systems;
+its unmodified font, license, source commit and checksums are in assets/fonts/.
 
-Method follows docs/design-system.md's reference article. Unlike the other
-generators this one is NOT wired into generate_all.py -- the output is a static
-artifact that only changes when the text, font or framing does, so CI never
-needs numpy/Pillow. Regenerate with:
-
-    python -m pip install -r scripts/requirements-wordmark.txt
-    python scripts/generate_wordmark.py
-
-Env overrides: STATIC=1 (frozen frame), WORDMARK_TEXT, WORDMARK_FONT,
+Env overrides: WORDMARK_TEXT, WORDMARK_FONT (explicit local font override),
 WORDMARK_FONT_INDEX, WORDMARK_TILT, WORDMARK_COLS, WORDMARK_ROW_MARGIN.
+STATIC=1 remains compatible with the default static output.
 """
 
 from __future__ import annotations
@@ -62,7 +52,7 @@ BUCKETS = [0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 3, 3]
 # ---- geometry / grid ------------------------------------------------------
 COLS = int(os.environ.get("WORDMARK_COLS", 91))
 ROWS = 0                # derived from the art -- see fit()
-ROW_MARGIN = int(os.environ.get("WORDMARK_ROW_MARGIN", 4))   # blank rows top and bottom
+ROW_MARGIN = int(os.environ.get("WORDMARK_ROW_MARGIN", 0))   # blank rows top and bottom
 CELL_W = 9.0
 CELL_H = 15.5
 
@@ -71,13 +61,7 @@ CELL_H = 15.5
 # below that width they get narrower than the sideways offset the rotation gives
 # the extrusion walls, the walls fill them, and the name rasterizes as a brick.
 # Even stroke weight is what keeps the shading consistent across a glyph.
-FONT_CANDIDATES = [
-    os.environ.get("WORDMARK_FONT", ""),
-    "C:/Windows/Fonts/arialbd.ttf",
-    "C:/Windows/Fonts/verdanab.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    "/System/Library/Fonts/Futura.ttc",
-]
+BUNDLED_FONT = ROOT / "assets/fonts/IBMPlexMono-Bold.ttf"
 FONT_INDEX = int(os.environ.get("WORDMARK_FONT_INDEX", 0))   # face within a .ttc
 TEXT = os.environ.get("WORDMARK_TEXT", "KJ-AIML")
 INTRO_WORD_COLS = {
@@ -161,10 +145,12 @@ DOT_PITCH = 9.0         # sampling grid for word glyphs -- the dot-matrix look
 
 
 def font_path() -> str:
-    for candidate in FONT_CANDIDATES:
-        if candidate and Path(candidate).exists():
-            return candidate
-    raise SystemExit("no bold TTF found; set WORDMARK_FONT")
+    """Use the checked-in face unless the caller explicitly selects another."""
+    override = os.environ.get("WORDMARK_FONT")
+    path = Path(override) if override else BUNDLED_FONT
+    if not path.is_file():
+        raise FileNotFoundError(f"wordmark font is missing: {path}")
+    return str(path)
 
 
 # ---------------------------------------------------------------- point shell
@@ -634,6 +620,7 @@ def boot_sequence(rest: np.ndarray, art_top: float, art_w: float, art_h: float,
 
 # ---------------------------------------------------------------------- svg
 def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
+    out.parent.mkdir(parents=True, exist_ok=True)
     art_w = COLS * CELL_W
     art_h = ROWS * CELL_H
     width = art_w + PAD * 2
@@ -647,7 +634,7 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
         f'viewBox="0 0 {width:.0f} {height:.0f}" role="img" font-family="ui-monospace, '
         f'SFMono-Regular, Menlo, Monaco, Consolas, &quot;Liberation Mono&quot;, monospace">',
         f'<title>{xml(f"{TEXT} 3D ASCII wordmark")}</title>',
-        f'<desc>{xml(f"The handle {TEXT} extruded into a 3D slab and rasterized to ASCII characters, rocking on its vertical axis inside a terminal panel.")}</desc>',
+        f'<desc>{xml(f"The handle {TEXT} constructed from shaded ASCII characters in a three-dimensional perspective inside a compact terminal panel.")}</desc>',
         '<style>'
         + "".join(f'.s{i}{{fill:{c}}}' for i, c in enumerate(SHADES))
         + "".join(f'.{k}{{fill:{v}}}' for k, v in ACCENT.items())
@@ -663,15 +650,15 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
     for i, dot in enumerate(DOTS):
         parts.append(f'<circle cx="{PAD + i * 18}" cy="{TITLEBAR_H / 2}" r="5" fill="{dot}"/>')
     parts.append(f'<text x="{width / 2:.0f}" y="{TITLEBAR_H / 2 + 4:.0f}" fill="{TITLE_TEXT}" '
-                 f'font-size="11.5" text-anchor="middle">KJ@AI-ENGINEER: ~$ ./wordmark.sh --3d</text>')
+                 f'font-size="11.5" text-anchor="middle">{xml(TEXT)} / 3D ASCII</text>')
 
     def frame_group(grid: np.ndarray, extra: str = "") -> str:
         return grid_group(grid, art_top, PAD, extra)
 
-    if mode == "static":                      # frozen frame 0 -- STATIC=1 fallback
+    if mode == "static":                      # complete artwork at time zero
         parts.append(frame_group(frames[0]))
         parts.append("</svg>\n")
-        out.write_text("".join(parts), encoding="utf-8")
+        out.write_text("".join(parts), encoding="utf-8", newline="\n")
         print(f"wrote {out} (static)")
         return
 
@@ -702,15 +689,20 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
 
     parts.append("</svg>\n")
     svg = "".join(parts)
-    out.write_text(svg, encoding="utf-8")
+    out.write_text(svg, encoding="utf-8", newline="\n")
     print(f"wrote {out}  {len(svg) / 1024:.1f} KB  {count} frames  {width:.0f}x{height:.0f}")
 
 
-def generate(out: Path, mode: str = "rock", frames_count: int | None = None,
+def generate(out: Path, mode: str = "static", frames_count: int | None = None,
              dur: float | None = None, preview: bool = False) -> None:
+    if mode not in {"static", "rock", "spin", "once"}:
+        raise ValueError(f"unknown wordmark mode: {mode}")
     P, N = build_shell()
     rest = REST_YAW                           # the 3/4 pose the wordmark rests in
-    if mode == "spin":
+    if mode == "static":
+        yaws = [rest]
+        dur = 0.0
+    elif mode == "spin":
         count = frames_count or 36
         yaws = [rest + 2 * math.pi * i / count for i in range(count)]
         dur = dur or 7.0
@@ -736,9 +728,9 @@ def generate(out: Path, mode: str = "rock", frames_count: int | None = None,
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=["spin", "once", "rock", "static"],
-                        default="static" if os.environ.get("STATIC") == "1" else "rock")
+                        default="static", help="static by default; other modes are legacy animations")
     parser.add_argument("--out", default=str(ROOT / "assets/kj-wordmark.svg"))
     parser.add_argument("--frames", type=int, default=None)
     parser.add_argument("--dur", type=float, default=None)

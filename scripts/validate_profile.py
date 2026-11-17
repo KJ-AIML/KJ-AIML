@@ -1,4 +1,4 @@
-"""Offline checks for this profile's deliberately small, static SVG vocabulary.
+"""Offline checks for this profile's static SVGs and declared animated hero.
 
 This is a build check, not a general SVG sanitizer or a substitute for rendering
 the artwork. Local links are checked without requesting public URLs.
@@ -15,13 +15,19 @@ from urllib.parse import unquote, urlsplit
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-ASSET_NAMES = ("kj-wordmark.svg", "kj-agent-cli.svg")
+ANIMATED_ASSET = "kj-wordmark-animated.svg"
+ASSET_NAMES = ("kj-wordmark.svg", "kj-agent-cli.svg", ANIMATED_ASSET)
 SVG_NS = "http://www.w3.org/2000/svg"
 MAX_SVG_BYTES = 500_000
 STATIC_TAGS = {
     "svg", "title", "desc", "style", "defs", "g", "path", "rect", "circle",
     "ellipse", "line", "polyline", "polygon", "text", "tspan", "linearGradient",
     "radialGradient", "stop",
+}
+ANIMATION_TARGETS = {
+    "animate": {"opacity"},
+    "set": {"opacity", "fill"},
+    "animateTransform": {"transform"},
 }
 STYLE_PROPERTIES = {
     "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin",
@@ -75,7 +81,7 @@ def _css_rules(root: ET.Element) -> list[tuple[str, dict[str, str]]]:
     return sorted(rules, key=lambda rule: 2 if rule[0][0] == "#" else rule[0][0] == ".")
 
 
-def _check_values(properties: dict[str, str], ids: set[str]) -> None:
+def _check_values(properties: dict[str, str], ids: set[str], *, allow_animation: bool = False) -> None:
     for name, value in properties.items():
         local_name = name.rsplit("}", 1)[-1].lower()
         if local_name.startswith("on") or local_name in HIDING_PROPERTIES:
@@ -84,7 +90,9 @@ def _check_values(properties: dict[str, str], ids: set[str]) -> None:
             if not value.startswith("#") or value[1:] not in ids:
                 raise ValueError(f"external or missing SVG reference: {value!r}")
         if local_name in {"opacity", "fill-opacity", "stroke-opacity", "font-size"}:
-            _number(value, local_name, positive=True)
+            number = _number(value, local_name, positive=not allow_animation or local_name == "font-size")
+            if number < 0:
+                raise ValueError(f"negative SVG attribute: {local_name}")
         for match in re.finditer(r"url\s*\(([^)]*)\)", value, re.I):
             target = match[1].strip().strip("\"'")
             if not target.startswith("#") or target[1:] not in ids:
@@ -93,7 +101,7 @@ def _check_values(properties: dict[str, str], ids: set[str]) -> None:
             raise ValueError(f"invalid SVG resource reference: {value!r}")
 
 
-def validate_svg(path: Path) -> ET.Element:
+def validate_svg(path: Path, *, allow_animation: bool = False) -> ET.Element:
     if path.stat().st_size >= MAX_SVG_BYTES:
         raise ValueError(f"asset too large: {path}")
     data = path.read_bytes()
@@ -119,17 +127,41 @@ def validate_svg(path: Path) -> ET.Element:
     ids = {element.attrib["id"] for element in root.iter() if "id" in element.attrib}
     rules = _css_rules(root)
     for _, declarations in rules:
-        _check_values(declarations, ids)
+        _check_values(declarations, ids, allow_animation=allow_animation)
+    animation_count = 0
     for element in root.iter():
         tag = element.tag.removeprefix(f"{{{SVG_NS}}}")
-        if element.tag != f"{{{SVG_NS}}}{tag}" or tag not in STATIC_TAGS:
+        allowed_tags = STATIC_TAGS | (ANIMATION_TARGETS.keys() if allow_animation else set())
+        if element.tag != f"{{{SVG_NS}}}{tag}" or tag not in allowed_tags:
             raise ValueError(f"active or unsupported SVG element: {element.tag}")
-        _check_values(element.attrib, ids)
-        _check_values(_declarations(element.get("style", "")), ids)
+        _check_values(element.attrib, ids, allow_animation=allow_animation)
+        _check_values(_declarations(element.get("style", "")), ids, allow_animation=allow_animation)
+        if tag in ANIMATION_TARGETS:
+            animation_count += 1
+            target = element.get("attributeName")
+            if target not in ANIMATION_TARGETS[tag]:
+                raise ValueError(f"unsupported animation target: {target}")
+            if tag == "animateTransform" and element.get("type") != "translate":
+                raise ValueError("only translation animations are supported")
+            for timing in ("begin", "dur"):
+                if timing in element.attrib and not re.fullmatch(r"\d+(?:\.\d+)?s", element.attrib[timing]):
+                    raise ValueError(f"unsupported animation timing: {element.attrib[timing]}")
+            if target == "opacity":
+                for value in element.get("values", element.get("to", "")).split(";"):
+                    if not 0 <= _number(value, "animated opacity") <= 1:
+                        raise ValueError("animated opacity must be between zero and one")
+
+    if allow_animation:
+        fallback = root.find(f"{{{SVG_NS}}}g[@id='static-fallback']")
+        if (animation_count == 0 or fallback is None
+                or fallback.get("opacity", "1") != "1"
+                or not list(fallback.iter(f"{{{SVG_NS}}}text"))):
+            raise ValueError("animated hero requires a visible static fallback")
 
     visible_text = []
 
-    def walk(element: ET.Element, inherited: dict[str, str], tx: float = 0, ty: float = 0) -> None:
+    def walk(element: ET.Element, inherited: dict[str, str], tx: float = 0, ty: float = 0,
+             shown: bool = True) -> None:
         tag = element.tag.rsplit("}", 1)[-1]
         if tag in {"defs", "style", "title", "desc"}:
             return
@@ -139,6 +171,7 @@ def validate_svg(path: Path) -> ET.Element:
                     or selector.startswith(".") and selector[1:] in element.get("class", "").split()):
                 properties.update(declarations)
         properties.update(_declarations(element.get("style", "")))
+        shown = shown and float(properties.get("opacity", "1")) > 0
         if transform := element.get("transform"):
             match = re.fullmatch(r"translate\(\s*([^,\s]+)[,\s]+([^,\s]+)\s*\)", transform)
             if match is None:
@@ -152,10 +185,10 @@ def validate_svg(path: Path) -> ET.Element:
             y = _number(properties.get("y", "0"), "text y") + ty
             if not 0 <= x <= width or not 0 < y <= height:
                 raise ValueError("SVG text is outside the viewport")
-            if tag == "text":
+            if tag == "text" and shown:
                 visible_text.append("".join(element.itertext()).strip())
         for child in element:
-            walk(child, properties, tx, ty)
+            walk(child, properties, tx, ty, shown)
 
     walk(root, {})
     if not visible_text:
@@ -170,6 +203,10 @@ class _HTMLReferences(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         self.references.extend(value for name, value in attrs if name in {"href", "src"} and value)
+        for name, value in attrs:
+            if name == "srcset" and value:
+                self.references.extend(candidate.strip().split()[0]
+                                       for candidate in value.split(",") if candidate.strip())
 
 
 def _destination(text: str) -> str:
@@ -226,7 +263,7 @@ def validate_local_references(document: Path, repository: Path) -> None:
 
 def validate_profile(repository: Path = ROOT) -> None:
     for name in ASSET_NAMES:
-        validate_svg(repository / "assets" / name)
+        validate_svg(repository / "assets" / name, allow_animation=name == ANIMATED_ASSET)
     for document in [repository / "README.md", *sorted((repository / "docs").rglob("*.md"))]:
         validate_local_references(document, repository)
     readme = (repository / "README.md").read_text(encoding="utf-8").lower()

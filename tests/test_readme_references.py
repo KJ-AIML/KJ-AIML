@@ -20,6 +20,7 @@ def test_documentation_local_references_exist(document: Path) -> None:
     '[notes](<assets/panel.svg> "A title")',
     '[notes][panel]\n\n[panel]: assets/panel.svg "A title"',
     '<IMG SRC=assets/panel.svg alt="Panel">',
+    '<picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/panel.svg"></picture>',
     "<a href='assets/panel.svg'>Notes</a>",
 ])
 def test_missing_markdown_and_html_targets_fail(tmp_path: Path, link: str) -> None:

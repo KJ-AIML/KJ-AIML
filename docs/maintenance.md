@@ -12,10 +12,11 @@ python -m pytest -q
 git diff --check
 ```
 
-`generate_all.py` rebuilds **both** committed SVGs, using paths resolved from the
-script's location. It works when invoked from another working directory. The
-default output is static; setting `STATIC=1` produces the same complete output.
-No environment flag is needed to make the profile readable without animation.
+`generate_all.py` rebuilds **all three** committed SVGs, using paths resolved
+from the script's location. It works from another working directory. Static and
+animated wordmarks have separate filenames; the optional CLI panel is static.
+`STATIC=1` is a compatibility alias for the same complete build. Select the static
+artifact by filename, not by replacing the animated asset's content.
 
 If Python is managed through uv, the equivalent command prefix is:
 
@@ -42,24 +43,26 @@ design page rather than embedded in the profile's main reading flow.
 
 The wordmark renderer uses the bundled font in `assets/fonts/`. Keep its source
 record and license with it. Use the checked-in default configuration for committed
-assets; `WORDMARK_*` overrides are for local experiments. Rebuild both assets
+assets; `WORDMARK_*` overrides are for local experiments. Rebuild all assets
 after changing a generator or shared SVG helper.
 
-The old animated wordmark modes remain available for experiments. Write them to
-a separate file; animated assets are deliberately rejected by profile validation.
+The profile uses the `rock` wordmark mode. `once` and `spin` remain available for
+experiments; write those to separate files. Validation permits the dedicated
+hero's opacity, fill, and translation animations, while still rejecting scripts,
+external resources, link mutation, and animation in the static artifacts.
 See [the renderer notes](3d-ascii-wordmark.md).
 
 ## CI
 
 `Validate profile` installs the complete dependency set on Ubuntu and Windows.
 Tests cover generation from an unrelated working directory, deterministic output,
-both committed assets' freshness, static SVG safety, local document references,
+all committed assets' freshness, SVG safety, reduced-motion source references,
 and read-only workflow permissions. Missing renderer dependencies fail instead of
 silently skipping the wordmark checks.
 
 Freshness comparisons normalize checkout line endings so Windows CRLF does not
 produce a false difference; repeated generated output must still be byte-identical.
-The workflow also regenerates both assets and checks that Git sees no asset changes.
+The workflow also regenerates all assets and checks that Git sees no asset changes.
 
 The workflow has `contents: read` and never publishes or commits generated files.
 Action references are pinned to full commit SHAs. When upgrading them, verify the

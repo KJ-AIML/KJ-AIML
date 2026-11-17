@@ -13,7 +13,8 @@ from generate_wordmark import generate as generate_wordmark
 def main() -> None:
     generate_agent_cli(ROOT / "assets/kj-agent-cli.svg", static=True)
     generate_wordmark(ROOT / "assets/kj-wordmark.svg", mode="static")
-    print("Generated both profile visuals (static mode).")
+    generate_wordmark(ROOT / "assets/kj-wordmark-animated.svg", mode="rock")
+    print("Generated all profile visuals (animated hero and static alternatives).")
 
 
 if __name__ == "__main__":

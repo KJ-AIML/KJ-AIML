@@ -1,4 +1,4 @@
-"""Both committed assets must be complete, static and reproducible on every OS."""
+"""All committed assets must be complete and reproducible on every OS."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import pytest
 # absent. CI and the documented local command install both requirements files.
 from generate_agent_cli import generate as generate_agent_cli
 from generate_wordmark import generate as generate_wordmark
-from scripts.validate_profile import ASSET_NAMES, ROOT, validate_svg
+from scripts.validate_profile import ANIMATED_ASSET, ASSET_NAMES, ROOT, validate_svg
 
 
 @pytest.fixture(scope="module")
@@ -42,7 +42,7 @@ def generated_runs(tmp_path_factory: pytest.TempPathFactory) -> list[dict[str, b
         for name in ASSET_NAMES:
             path = workspace / "assets" / name
             assert path.is_file(), f"generate_all.py did not produce {name}"
-            validate_svg(path)
+            validate_svg(path, allow_animation=name == ANIMATED_ASSET)
             outputs[name] = path.read_bytes()
         runs.append(outputs)
     assert not list(outside.iterdir()), "generation wrote files relative to the caller's cwd"

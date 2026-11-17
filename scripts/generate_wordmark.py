@@ -1,13 +1,13 @@
-"""Render "KJ-AIML" as a compact, static 3D ASCII wordmark.
+"""Render "KJ-AIML" as static and animated 3D ASCII wordmarks.
 
 Pipeline: draw the text with a bold TTF -> threshold to a mask -> extrude the
 mask along +z into a surface point shell (front cap, back cap, boundary walls)
 -> rotate / project each frame -> z-buffer splat into a character grid, char
 picked by Lambert shading of the surface normal. Rotation is a pre-rendered
-flipbook only in the explicitly requested legacy modes (rock, spin, once).
-The committed asset uses one fully visible rest pose, without an intro.
+flipbook in the animated modes (rock, spin, once). The profile build emits both
+a compact static rest pose and the original boot-to-rock animated hero.
 
-Regenerate both profile assets with ``python scripts/generate_all.py``.
+Regenerate all profile assets with ``python scripts/generate_all.py``.
 The bundled IBM Plex Mono Bold font fixes the raster geometry across systems;
 its unmodified font, license, source commit and checksums are in assets/fonts/.
 
@@ -391,11 +391,11 @@ def scene_status(art_top: float, art_h: float, width: float) -> str:
     """A telemetry readout that checks itself off row by row."""
     rows = [
         ("PROFILE.SCAN", "OK", "ok"),
-        ("REPOSITORIES", "4 PUBLIC", "ok"),
+        ("REPOSITORIES", "OPEN SOURCE", "ok"),
         ("ORCHESTRATION", "ALMS / LANGGRAPH", "info"),
         ("HARNESS", "MULTI-REPO", "info"),
         ("VALIDATION", "TRACEABLE", "ok"),
-        ("CONTRIB.FEED", "PUBLIC ENDPOINT", "warn"),
+        ("CONTEXT", "LOCAL MEMORY", "info"),
         ("ASSET.PIPELINE", "DETERMINISTIC", "ok"),
         ("RUNTIME", "SMIL / NO JS", "info"),
     ]
@@ -403,8 +403,7 @@ def scene_status(art_top: float, art_h: float, width: float) -> str:
     right = width - PAD - 26
     parts = [f'<g><set attributeName="opacity" to="0" begin="{ALERT_END:.2f}s"/>']
     parts.append(f'<text x="{left}" y="{art_top + 20:.0f}" font-size="10.5" '
-                 f'class="s1">KJ-AIML / profile-scan &#183; access level 3F &#183; '
-                 f'public data only</text>')
+                 f'class="s1">KJ-AIML / initializing ASCII scene</text>')
 
     for i, (label, value, tone) in enumerate(rows):
         y = art_top + 56 + i * 24
@@ -430,12 +429,12 @@ def scene_status(art_top: float, art_h: float, width: float) -> str:
 def scene_alerts(art_top: float, art_h: float, width: float) -> str:
     """Panels stack over the readout until the screen is buried, then clear."""
     panels = [
-        (0.06, 0.10, "TRACE 0x4F2A", "reading public endpoint", "warn"),
-        (0.46, 0.04, "SCAN /repos", "4 matched", "info"),
-        (0.22, 0.34, "ALERT", "unsigned asset in tree", "bad"),
-        (0.62, 0.28, "TRACE 0x91C7", "deterministic rebuild", "warn"),
-        (0.10, 0.58, "ALERT", "identity not yet resolved", "bad"),
-        (0.52, 0.62, "SCAN /assets", "5 svg &#183; 0 remote", "info"),
+        (0.06, 0.10, "GEOMETRY", "extruding letter forms", "warn"),
+        (0.46, 0.04, "PROJECT /3d", "surface points ready", "info"),
+        (0.22, 0.34, "IGNITION", "particle field online", "bad"),
+        (0.62, 0.28, "RENDER /ascii", "lighting the scene", "warn"),
+        (0.10, 0.58, "ASSEMBLE", "connecting the dots", "bad"),
+        (0.52, 0.62, "BUILD /svg", "self-contained artwork", "info"),
         (0.34, 0.46, "RESOLVING", "kj-aiml", "bad"),
     ]
     panel_w, panel_h = 212.0, 50.0
@@ -663,6 +662,13 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
         print(f"wrote {out} (static)")
         return
 
+    # With no SMIL support only this complete rest pose is visible. Animation
+    # support switches to the scene at time zero without hiding profile text.
+    parts.append('<g id="static-fallback">')
+    parts.append(frame_group(frames[0]))
+    parts.append('<set attributeName="opacity" to="0" begin="0s"/></g>')
+    parts.append('<g id="animated-scene" opacity="0">'
+                 '<set attributeName="opacity" to="1" begin="0s"/>')
     parts.append(scene_status(art_top, art_h, width))
     parts.append(scene_alerts(art_top, art_h, width))
     parts.append(boot_sequence(frames[0], art_top, art_w, art_h, width))
@@ -688,7 +694,7 @@ def emit(frames: list[np.ndarray], mode: str, out: Path, dur: float) -> None:
                     f'repeatCount="indefinite"/>')
             parts.append(frame_group(rows, ' opacity="0"').replace("</g>", anim + "</g>"))
 
-    parts.append("</svg>\n")
+    parts.append("</g></svg>\n")
     svg = "".join(parts)
     out.write_text(svg, encoding="utf-8", newline="\n")
     print(f"wrote {out}  {len(svg) / 1024:.1f} KB  {count} frames  {width:.0f}x{height:.0f}")

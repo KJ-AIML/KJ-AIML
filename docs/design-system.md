@@ -7,9 +7,9 @@ including when images are unavailable.
 ## Reading order
 
 1. Name, engineering focus, location, and LinkedIn.
-2. A compact, static 3D ASCII wordmark.
-3. Four current projects, each explaining its purpose and linking to usable code.
-4. A merged contribution outside this account, linked to its PR and release.
+2. The animated ASCII hero, with a still alternative for reduced motion.
+3. Production experience and the Axtra Intellion venture.
+4. Four current projects and a merged contribution outside this account.
 5. Working stack and an invitation to connect.
 
 Project descriptions use single-column paragraphs so they wrap naturally on a
@@ -18,9 +18,16 @@ sources live in [the source notes](profile-refresh/sources.md).
 
 ## Artwork
 
-The main profile uses only [the wordmark](../assets/kj-wordmark.svg). Its 855px-wide
-canvas has compact framing and a visible rest pose. There is no boot delay, motion,
-or hidden reveal state in the committed asset.
+The main profile uses [the animated wordmark](../assets/kj-wordmark-animated.svg):
+the original boot sequence, particle transitions, "WELCOME TO MY AI WORLD", and
+a rocking 3D ASCII mark. Its 855 × 312 canvas preserves the space the intro needs.
+The owner explicitly asked to keep this animation after reviewing the static draft.
+
+The name, headline, experience, and links remain in ordinary Markdown and never
+wait for the animation. A picture source selects the compact
+[static wordmark](../assets/kj-wordmark.svg) when the visitor requests reduced
+motion. A visible still-artwork link offers the same alternative manually. The
+animated SVG also contains a visible rest frame for viewers without SMIL support.
 
 The optional panel below preserves the CLI visual language for reuse. It is a
 static illustration. It carries no information that is necessary to understand
@@ -28,9 +35,10 @@ the profile.
 
 <img src="../assets/kj-agent-cli.svg" width="855" alt="Static terminal illustration describing agent infrastructure and the Python, Rust, and TypeScript stack" />
 
-Both SVGs include a title and description. They contain no animation elements,
-scripts, remote resources, or simulated keyboard controls. The profile therefore
-does not need a motion preference to produce its readable state.
+All SVGs include a title and description and contain no scripts or remote
+resources. Only the dedicated animated hero uses SMIL; the compact wordmark and
+CLI illustration remain static. The hero's terminal readouts describe its visual
+construction rather than pretending to fetch live profile statistics.
 
 ## Palette and typography
 

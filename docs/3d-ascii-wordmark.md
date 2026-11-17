@@ -1,9 +1,11 @@
 # 3D ASCII wordmark
 
-[The committed wordmark](../assets/kj-wordmark.svg) renders **KJ-AIML** as an
-extruded slab, shaded with ASCII characters. It is a compact, static rest pose
-that is visible as soon as the SVG loads. The geometry is generated locally;
-viewing it requires no script, external font, or animation support.
+The wordmark renders **KJ-AIML** as an extruded slab, shaded with ASCII characters.
+The profile uses [the animated hero](../assets/kj-wordmark-animated.svg), with the
+original boot sequence, word/particle transitions, and a rocking rest pose.
+[The compact static version](../assets/kj-wordmark.svg) is selected by the README
+for reduced motion and is also linked directly. Both are generated locally and
+require no scripts or external resources.
 
 ## Pipeline
 
@@ -13,7 +15,7 @@ viewing it requires no script, external font, or animation support.
 | `project()` | Rotate the surface, cull back faces, apply perspective, lighting, and depth fog |
 | `fit()` | Fit the projected points into the character grid |
 | `rasterize()` | Resolve depth and map brightness to ASCII density |
-| `emit()` | Write a visible SVG frame using neutral shades and fixed text lengths |
+| `emit()` | Write either a static frame or SMIL scene using neutral shades and fixed text lengths |
 
 The surface contains front and back caps plus walls around the text outline.
 Brightness selects both a density-ramp character and a neutral shade, so the
@@ -38,22 +40,31 @@ python scripts/generate_all.py
 python -m pytest -q
 ```
 
-This rebuilds the wordmark and the optional CLI panel. CI installs NumPy and
-Pillow and verifies both assets; no renderer test is skipped for missing packages.
+This rebuilds both wordmark variants and the optional CLI panel. CI installs
+NumPy and Pillow and verifies all assets; no renderer test is skipped for missing packages.
 
 For a wordmark-only build, `python scripts/generate_wordmark.py` also defaults
 to the static pose. `--preview` prints an ASCII frame in the terminal.
 
-## Experimental modes
+## Animation and fallback
 
-The renderer retains `rock`, `once`, and `spin` modes as explicit options. They
-precompute multiple frames and use SVG animation to switch between them. They
-are not used by the profile build and do not pass its static-asset checks.
+The profile build explicitly selects `rock` for `kj-wordmark-animated.svg`.
+The intro takes approximately 13.5 seconds, then a 20-frame sequence rocks the
+wordmark. Name, headline, and all meaningful profile facts stay visible in
+Markdown while this plays. The animation's terminal readouts are visual effects;
+they do not claim current repository counts or fetch live profile data.
+
+A visible rest frame is hidden at time zero only when SMIL runs. The animated
+scene has zero base opacity and becomes visible through SMIL. A viewer that
+ignores animation therefore displays the rest frame instead of a blank panel
+or overlapping scenes. The README's picture source separately respects
+`prefers-reduced-motion` by selecting the compact static file.
+
+The `once` and `spin` modes remain available for experiments. They precompute
+multiple frames and use SVG animation to switch between them.
 
 Use the generator's `--help` for the available output and mode arguments, and
 write experiments outside `assets/` so they cannot replace a committed asset.
-The original boot sequence and timing remain implementation details of these
-legacy modes, not part of the profile's reading flow.
 
 `WORDMARK_TEXT`, `WORDMARK_FONT`, `WORDMARK_FONT_INDEX`, `WORDMARK_TILT`,
 `WORDMARK_COLS`, and `WORDMARK_ROW_MARGIN` support local geometry experiments.

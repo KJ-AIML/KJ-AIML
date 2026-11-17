@@ -40,7 +40,7 @@ jobs:
         run: python -m pip install -r scripts/requirements.txt -r scripts/requirements-wordmark.txt
       - name: Run tests
         run: python -m pytest -q
-      - name: Regenerate both static assets
+      - name: Regenerate animated and static assets
         run: python scripts/generate_all.py
       - name: Verify committed assets are fresh
         run: git diff --exit-code -- assets

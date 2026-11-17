@@ -17,23 +17,28 @@ GitHub account settings, and editing other repositories are outside this change.
 - Use only corroborated professional facts. Resolve conflicting employment and
   alias information with the owner before adding it. Do not copy private data,
   contact phone numbers, unsupported metrics, or claims from search snippets.
-- The main profile embeds only the compact wordmark. The agent panel remains an
+- The main profile embeds only the wordmark. The agent panel remains an
   optional static design artifact, documented outside the main profile.
 
 ## Visual/build contract
 
-- Keep `assets/kj-wordmark.svg` and `assets/kj-agent-cli.svg` as generated artifacts.
-- Both committed artifacts are fully readable without animation and contain no
-  animation elements, JavaScript, external resources, or fake interactive controls.
-- Wordmark: preserve 3D ASCII construction; default static, compact framing, target
-  height <= 220 at width 855. Keep long animation only as an explicit legacy option
-  if practical. Do not introduce new remote widgets or bitmap hero artwork.
+- Keep `assets/kj-wordmark.svg` and `assets/kj-agent-cli.svg` static, and generate
+  `assets/kj-wordmark-animated.svg` for the default README hero.
+- The owner explicitly requested their animation back on 2026-11-17. Restore
+  the boot sequence, particle transitions, and rocking ASCII wordmark. Essential
+  profile copy stays readable in Markdown throughout the animation.
+- Select the static wordmark with a `prefers-reduced-motion` picture source and
+  provide a visible still-image link. The animated SVG must show its rest frame
+  if SVG animation is unsupported. No scripts or external resources in any SVG.
+- Keep the static wordmark compact (height <= 220 at width 855). The animated
+  canvas retains the space its intro needs, with a 500 KB asset limit.
 - Agent panel: compact static illustration with factual generic focus/stack, no
   simulated thinking delay, keyboard shortcuts, fake version, or obsolete status.
 - Bundle an openly licensed bold font and its license under `assets/fonts/`.
   The wordmark's default font must use that file on every OS, not host font search.
-- `python scripts/generate_all.py` regenerates both committed assets. `STATIC=1`
-  has the same complete static behavior. Root resolution is independent of cwd.
+- `python scripts/generate_all.py` regenerates all three committed assets.
+  `STATIC=1` remains a compatibility alias for that complete build; static and
+  animated outputs now have separate filenames. Root resolution is independent of cwd.
 - The existing `generate(path: Path, static: bool = ...)` CLI-panel entry point and
   `generate(out: Path, mode: str = ..., ...)` wordmark entry point remain callable.
 
@@ -51,10 +56,11 @@ GitHub account settings, and editing other repositories are outside this change.
 ## Verification
 
 1. Run all tests with the documented full dependency set.
-2. Regenerate both artifacts and verify byte-for-byte freshness. A changed
+2. Regenerate all artifacts and verify byte-for-byte freshness. A changed
    generator without rebuilt output must fail validation.
-3. Check both static artifacts for readable text, dimensions, file-size budget,
-   title/description, and absence of active/external SVG content.
+3. Check static artifacts for readable text and absence of animation. Check the
+   animated hero's declared animation targets and its no-animation fallback. All
+   assets require dimensions, size budgets, metadata, and no active/external content.
 4. Validate Markdown and HTML local references and the profile's public links.
 5. Render assets at full width and phone width. Review profile text independently
    of images. Live browser checks are additional when a browser is available.

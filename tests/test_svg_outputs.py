@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.validate_profile import ASSET_NAMES, MAX_SVG_BYTES, ROOT, validate_svg
+from scripts.validate_profile import ANIMATED_ASSET, ASSET_NAMES, MAX_SVG_BYTES, ROOT, validate_svg
 
 
 def svg(body: str = '<text x="10" y="30">Readable content</text>', **attributes: str) -> str:
@@ -21,8 +21,8 @@ def check_svg(tmp_path: Path, content: str) -> None:
 
 
 @pytest.mark.parametrize("name", ASSET_NAMES)
-def test_committed_assets_are_readable_static_svg(name: str) -> None:
-    validate_svg(ROOT / "assets" / name)
+def test_committed_assets_are_readable_svg(name: str) -> None:
+    validate_svg(ROOT / "assets" / name, allow_animation=name == ANIMATED_ASSET)
 
 
 @pytest.mark.parametrize("body", [
@@ -91,3 +91,35 @@ def test_metadata_urls_and_internal_paint_are_safe(tmp_path: Path) -> None:
         '<g transform="translate(2,3)"><text class="ink" x="10" y="30">'
         'https://example.com is ordinary text &lt;script&gt;</text></g>'
     ))
+
+
+def test_animated_hero_requires_explicit_opt_in() -> None:
+    with pytest.raises(ValueError):
+        validate_svg(ROOT / "assets" / ANIMATED_ASSET)
+
+
+def test_animated_hero_retains_a_visible_nonanimated_frame() -> None:
+    root = validate_svg(ROOT / "assets" / ANIMATED_ASSET, allow_animation=True)
+    ns = "{http://www.w3.org/2000/svg}"
+    fallback = root.find(f"{ns}g[@id='static-fallback']")
+    scene = root.find(f"{ns}g[@id='animated-scene']")
+    assert fallback is not None and fallback.get("opacity", "1") == "1"
+    assert len(list(fallback.iter(f"{ns}text"))) > 5
+    assert scene is not None and scene.get("opacity") == "0"
+    # Ignoring SMIL leaves the complete fallback visible and the entire intro hidden.
+    for element in fallback.iter():
+        assert element.get("opacity", "1") != "0"
+
+
+@pytest.mark.parametrize("unsafe", [
+    '<set attributeName="href" to="https://example.com/" begin="0s"/>',
+    '<set attributeName="fill" to="url(https://example.com/a.svg)" begin="0s"/>',
+    '<animate attributeName="opacity" values="0;1" begin="click" dur="1s"/>',
+    '<script>alert(1)</script>',
+])
+def test_animation_does_not_allow_scripts_external_resources_or_link_mutation(tmp_path, unsafe) -> None:
+    content = (ROOT / "assets" / ANIMATED_ASSET).read_text(encoding="utf-8")
+    path = tmp_path / "animated.svg"
+    path.write_text(content.replace("</svg>", unsafe + "</svg>"), encoding="utf-8")
+    with pytest.raises(ValueError):
+        validate_svg(path, allow_animation=True)

@@ -1,40 +1,66 @@
 # Maintenance
 
-## Local commands
+## Rebuild and check
 
-From the repository root:
+Use Python 3.12 and install both pinned dependency sets:
 
 ```bash
-python scripts/generate_all.py      # rebuilds assets/kj-agent-cli.svg
+python -m pip install -r scripts/requirements.txt -r scripts/requirements-wordmark.txt
+python scripts/generate_all.py
 python scripts/validate_profile.py
 python -m pytest -q
+git diff --check
 ```
 
-Use `STATIC=1 python scripts/generate_all.py` on macOS/Linux, or `$env:STATIC='1'; python scripts/generate_all.py` in PowerShell, to omit animations. Static builds are the right output for screenshots and for reduced-motion review — see [design-system.md](design-system.md).
+`generate_all.py` rebuilds **both** committed SVGs, using paths resolved from the
+script's location. It works when invoked from another working directory. The
+default output is static; setting `STATIC=1` produces the same complete output.
+No environment flag is needed to make the profile readable without animation.
 
-## The wordmark is built separately
-
-`assets/kj-wordmark.svg` sits outside `generate_all.py`. It only changes when its text, font or framing does, and its renderer needs numpy and Pillow, which CI does not install:
+If Python is managed through uv, the equivalent command prefix is:
 
 ```bash
-python -m pip install -r scripts/requirements-wordmark.txt
-python scripts/generate_wordmark.py
+uv run --no-project --python 3.12 --with-requirements scripts/requirements.txt --with-requirements scripts/requirements-wordmark.txt python scripts/generate_all.py
 ```
 
-That exclusion has a cost: CI regenerates and diff-checks everything `generate_all.py` builds, so those assets cannot go stale — the wordmark can. It happened once, when renaming the shell prompt updated the generator and left the committed SVG showing the old host. `tests/test_wordmark_freshness.py` now regenerates the wordmark and fails if the committed bytes differ.
+Run the validator and pytest with the same dependency environment. Inspect changed
+artwork at its full width and at a phone-sized width before committing it. A static
+SVG render checks the artwork; it does not replace a live GitHub layout check.
 
-The same file asserts `HANDOFF >= BOOT_END`. `HANDOFF` in `scripts/generate_agent_cli.py` is a hand-kept copy of `BOOT_END` in `scripts/generate_wordmark.py`, because importing across the two would drag numpy into CI; the test is what keeps them in step. Both tests `importorskip` numpy and Pillow, so they skip in CI and guard the machine that actually rebuilds the asset.
+## Editing content
 
-Details in [3d-ascii-wordmark.md](3d-ascii-wordmark.md).
+Keep essential facts in `README.md`. Update project descriptions after checking
+their public source and quick start. Use specific work and linked contributions
+as evidence; avoid unverified adoption, performance, or employment claims.
+Record the source and review date in [the source notes](profile-refresh/sources.md).
 
-## Content and links
+The optional CLI illustration is defined in `scripts/generate_agent_cli.py`.
+Changing its content requires regenerating the SVG. It is documented on the
+design page rather than embedded in the profile's main reading flow.
 
-Update the copy in `README.md` and the `ROWS` table in `scripts/generate_agent_cli.py` — that table is what the agent panel streams. Update featured repository links and descriptions only after checking their public repository pages. Keep private architecture, credentials, and unsupported metrics out of both Markdown and SVGs.
+## Reproducible artwork
 
-## Workflow
+The wordmark renderer uses the bundled font in `assets/fonts/`. Keep its source
+record and license with it. Use the checked-in default configuration for committed
+assets; `WORDMARK_*` overrides are for local experiments. Rebuild both assets
+after changing a generator or shared SVG helper.
 
-`Validate profile` is the only workflow. It runs the tests, regenerates the deterministic assets, diff-checks them, and validates README references and SVG safety. It holds `contents: read` and writes nothing; `tests/test_workflows.py` asserts that no workflow ever gains write access without a deliberate decision.
+The old animated wordmark modes remain available for experiments. Write them to
+a separate file; animated assets are deliberately rejected by profile validation.
+See [the renderer notes](3d-ascii-wordmark.md).
 
-A second workflow used to refresh a contribution heatmap on a nightly cron. It was removed along with the heatmap, the fetcher, and the parser when the calendar left the README — it was fetching GitHub every night to commit a 68 KB asset nothing rendered. All of it is recoverable from git history if the calendar comes back.
+## CI
 
-Action references are pinned to full commit SHAs with the corresponding release in a comment. When upgrading, verify the release tag and replacement SHA from the official action repository.
+`Validate profile` installs the complete dependency set on Ubuntu and Windows.
+Tests cover generation from an unrelated working directory, deterministic output,
+both committed assets' freshness, static SVG safety, local document references,
+and read-only workflow permissions. Missing renderer dependencies fail instead of
+silently skipping the wordmark checks.
+
+Freshness comparisons normalize checkout line endings so Windows CRLF does not
+produce a false difference; repeated generated output must still be byte-identical.
+The workflow also regenerates both assets and checks that Git sees no asset changes.
+
+The workflow has `contents: read` and never publishes or commits generated files.
+Action references are pinned to full commit SHAs. When upgrading them, verify the
+release and replacement SHA against the official action repository.

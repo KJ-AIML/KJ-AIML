@@ -1,46 +1,53 @@
-<div align="center">
+# Hey, I'm KJ — Kongphop Jamreansuk
 
-<!-- identity mark: a boot sequence — status readout checks itself off, alert
-     panels bury it, then "Welcome / To / My / AI / World" each resolve and blow
-     apart, before a loading bar fills and detonates into "KJ-AIML" extruded into
-     a 3D slab and rasterized to ASCII. one static SVG, SMIL only, no JS.
-     regenerate: python scripts/generate_wordmark.py
-     — see docs/3d-ascii-wordmark.md -->
+**AI engineer building agent infrastructure, backend systems, and developer tools.**<br>
+Bangkok, Thailand · [LinkedIn](https://www.linkedin.com/in/kongphop-jamreansuk/)
 
-<img src="./assets/kj-wordmark.svg" width="855" alt="KJ-AIML — 3D ASCII wordmark" />
+I build tools for the work around an AI agent: keeping context useful, making
+decisions traceable, and turning a prototype into a maintainable application.
+Most of my work is in Python, Rust, and TypeScript.
 
-<br>
-<br>
+<img src="./assets/kj-wordmark.svg" width="855" alt="KJ-AIML rendered in 3D ASCII" />
 
-<b>AI Engineer · Founder</b> — Bangkok, remote-first
+## Selected work
 
-</div>
+**[Heli-Harness](https://github.com/KJ-AIML/heli-harness)** · Agent development workflow<br>
+Carry project context, policies, and task handoffs between coding tools and
+repositories. Built for work that continues across agent sessions.<br>
+[Get started](https://github.com/KJ-AIML/heli-harness#install-v0120) · [Releases](https://github.com/KJ-AIML/heli-harness/releases)
 
-<h3><code>KJ@AI-ENGINEER ~ $ whoami</code></h3>
+**[MemCtrl](https://github.com/KJ-AIML/memctrl)** · Rust + SQLite<br>
+Local memory for coding agents, with full-text retrieval and source hashes that
+flag stale context. Inspect what an agent remembers and where it came from.<br>
+[Get started](https://github.com/KJ-AIML/memctrl#quick-start) · [Releases](https://github.com/KJ-AIML/memctrl/releases)
 
-I build agent infrastructure, developer tools, and backend systems that make AI actually work — orchestration layers, agent skills, and the validation that keeps them honest in production.
+**[ALMS](https://github.com/KJ-AIML/alms)** · Python + FastAPI<br>
+A backend starter and CLI with explicit application and agent layers. Scaffold
+the database, observability, and container setup your project needs.<br>
+[Get started](https://github.com/KJ-AIML/alms#quick-start-with-cli) · [Releases](https://github.com/KJ-AIML/alms/releases)
 
-<div align="center">
-<img src="./assets/kj-agent-cli.svg" width="860" alt="An AI agent CLI session: the prompt whoami is typed, then the answer streams in with role, focus, stack, infrastructure, and working principle" />
-</div>
+**[Samo](https://github.com/KJ-AIML/samo)** · Rust + GPUI<br>
+A native disk and system monitor for finding large files, inspecting resource
+usage, and cleaning up development build artifacts.<br>
+[Source](https://github.com/KJ-AIML/samo) · [Downloads](https://github.com/KJ-AIML/samo/releases)
 
-<h3><code>KJ@AI-ENGINEER ~ $ ./systems.sh --public</code></h3>
+## Beyond my own repos
 
-Public repositories, linked to their source. Each one is a layer of the pipeline above rather than a standalone demo.
+I contributed a [fullscreen fix to OpenIDEA](https://github.com/l0ng-ai/openidea/pull/1608)
+for grouped project windows on notched Macs. The fix was merged and shipped in
+[v0.1.38](https://github.com/l0ng-ai/openidea/releases/tag/v0.1.38).
 
-| Repository | Layer | What it is |
-| --- | --- | --- |
-| [ALMS](https://github.com/KJ-AIML/alms) | spec → backend | An AI-first backend starter and CLI for building structured, observable applications with agent and infrastructure layers. |
-| [ALMS LangGraph Agent Skill](https://github.com/KJ-AIML/alms-langgraph-agent-skill) | orchestration | An ALMS-style skill for building LangGraph and LangChain agent workflows. |
-| [Helicopter Harness](https://github.com/KJ-AIML/helicopter-harness) | harness | A parent-workspace harness for multi-repo, multi-agent engineering work. |
-| [Agent Native Backend](https://github.com/KJ-AIML/agent-native-backend) | reference | A field guide to production backend architecture for AI agents. |
+I also build [Clarify](https://github.com/KJ-AIML/clarify), which turns Markdown
+into interactive architecture and decision boards, and maintain an
+[agent backend field guide](https://github.com/KJ-AIML/agent-native-backend).
 
-<h3><code>KJ@AI-ENGINEER ~ $ ./links.sh</code></h3>
+## Working with me
 
-| | |
-| --- | --- |
-| GitHub | [@KJ-AIML](https://github.com/KJ-AIML) |
-| LinkedIn | [Kongphop Jamreansuk](https://www.linkedin.com/in/kongphop-jamreansuk/) |
-| Location | Bangkok |
+**Languages:** Python, Rust, TypeScript<br>
+**Backend & agents:** FastAPI, LangGraph, LangChain<br>
+**Infrastructure:** Docker, Google Cloud
 
-<sub><code>exit 0</code> — built as a self-contained profile artifact: local SVGs, deterministic generators, no third-party widgets and no remote assets. Notes in <a href="./docs/design-system.md">docs/design-system.md</a>.</sub>
+Working on agent infrastructure or a useful developer tool?
+[Let's connect on LinkedIn](https://www.linkedin.com/in/kongphop-jamreansuk/).
+
+<sub>Original ASCII artwork, generated locally. [Design](./docs/design-system.md) · [Sources](./docs/profile-refresh/sources.md)</sub>

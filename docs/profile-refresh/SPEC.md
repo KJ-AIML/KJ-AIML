@@ -68,3 +68,20 @@ essential facts in decorative artwork, and overstating public evidence. Font
 vendoring, complete CI, ordinary Markdown, and source links address these risks.
 No numerical rating is a guarantee; acceptance is a readable, truthful, maintained
 profile with reproducible artifacts and current passing checks.
+
+## Positioning addendum (owner-confirmed 2026-11-17)
+
+- **Audience:** people hiring for AI platform or AI engineering roles, and
+  potential collaborators. kjsc.dev says the owner is open to both.
+- **Headline:** the CV's "AI engineer for LLM systems, agents, and inference
+  infrastructure", plus "Co-founder & CTO at Axtra Intellion".
+- **Principle:** "Make it exist first, make it production-ready next." This
+  replaces the older "make it good later" wording.
+- **Employer work** is described by domain (LLM serving, Thai speech-to-text with
+  PII masking, document and compliance AI, agent-assist), without employer
+  names. The CV on kjsc.dev carries names and dates.
+- **Axtra Intellion (AXTL)** is named and described. Its staging URL stays
+  unlinked until it serves a public page.
+- **Order:** identity → production work → AXTL → open source → stack → contact.
+  Production experience leads because it is the strongest signal for the target
+  roles.

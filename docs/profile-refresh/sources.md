@@ -15,11 +15,24 @@ would require ongoing measurement.
 | OpenIDEA fullscreen contribution was merged and released | [PR #1608](https://github.com/l0ng-ai/openidea/pull/1608), [v0.1.38 release notes](https://github.com/l0ng-ai/openidea/releases/tag/v0.1.38) |
 | Clarify turns Markdown into architecture and decision boards | [Repository and examples](https://github.com/KJ-AIML/clarify) |
 | Agent backend field guide | [Public guide](https://github.com/KJ-AIML/agent-native-backend) |
+| Heli-Harness is published on npm | [npm package](https://www.npmjs.com/package/heli-harness) |
+| AXGA is a small Rust coding agent built for low-cost VPS hosting | [Repository](https://github.com/KJ-AIML/axga-harness-agent-rs), [v0.1.2 release](https://github.com/KJ-AIML/axga-harness-agent-rs/releases/tag/v0.1.2) |
+| Personal site and "open to opportunities and collaboration" | [kjsc.dev](https://www.kjsc.dev) |
 
-The stack combines the owner's existing public profile with the featured projects'
-documented technologies. No job title at a specific employer, company affiliation,
-social alias beyond the linked GitHub/LinkedIn identities, or performance metric
-was added without confirmation.
+## Owner-provided facts
+
+The owner supplied their current CV on 2026-11-17 and confirmed it as the source
+for the headline, the "Production work" section, the Axtra Intellion (AXTL) role
+and description, the stack, and the 95%+ tag-recall figure. The owner chose to
+describe employer work by domain without naming employers in the README. The CV
+on kjsc.dev carries the employers and dates.
+
+The AXTL staging site is not linked, because it returned 404 on 2026-11-17. Link
+it once a public page is live.
+
+The stack combines the CV with the featured projects' documented technologies.
+Don't add any other employer names, affiliations, aliases, or metrics without the
+owner's confirmation.
 
 When refreshing this page, check both the README and the linked implementation or
 release. A repository description alone is not evidence for user counts,

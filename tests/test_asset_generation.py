@@ -13,7 +13,7 @@ import pytest
 # Required imports intentionally fail collection when renderer dependencies are
 # absent. CI and the documented local command install both requirements files.
 from generate_agent_cli import generate as generate_agent_cli
-from generate_wordmark import generate as generate_wordmark
+from generate_braille import generate as generate_wordmark
 from scripts.validate_profile import ANIMATED_ASSET, ASSET_NAMES, ROOT, validate_svg
 
 

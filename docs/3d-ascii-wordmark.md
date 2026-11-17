@@ -1,72 +1,79 @@
-# 3D ASCII wordmark
+# Braille hand intro and wordmark
 
-The wordmark renders **KJ-AIML** as an extruded slab, shaded with ASCII characters.
-The profile uses [the animated hero](../assets/kj-wordmark-animated.svg), with the
-original boot sequence, word/particle transitions, and a rocking rest pose.
-[The compact static version](../assets/kj-wordmark.svg) is selected by the README
-for reduced motion and is also linked directly. Both are generated locally and
-require no scripts or external resources.
+The profile uses [the animated hero](../assets/kj-wordmark-animated.svg): two
+shaded hands reach toward a green signal, withdraw, and reveal **KJ-AIML**.
+The [still version](../assets/kj-wordmark.svg) shows the same final composition.
+Both use an 855 by 300 canvas and stay below the 500 KB asset budget.
+
+The owner supplied [pi-ter](https://github.com/KJ-AIML/pi-ter) as the visual
+reference. The hand fields are vendored at a fixed revision; their source and
+encoding are documented in [scripts/data](../scripts/data/README.md).
 
 ## Pipeline
 
-| Stage | Purpose |
+`scripts/generate_braille.py` generates both variants without network access.
+
+1. Draw `KJ-AIML` with the bundled IBM Plex Mono Bold font and apply an oblique
+   shear to the mask.
+2. Build the bevel from successive mask erosions, light the front surface, and
+   place an offset lavender extrusion behind it.
+3. Sample the surfaces into a dithered dot grid. Group round SVG strokes by shade
+   to keep the asset compact and independent of installed Braille fonts.
+4. Decode the two local alpha/luminance hand fields. Extend the wrist texture
+   beyond the viewport so the hands remain attached while moving.
+5. Emit the still composition, or add a finite SMIL opacity/translation timeline.
+
+The bundled font's exact source and open font license are included in
+[assets/fonts](../assets/fonts/). No additional renderer dependency is needed.
+
+## Timing
+
+| Time | Composition |
 | --- | --- |
-| `build_shell()` | Draw the text with the bundled bold font, threshold a mask, and extrude its surface points |
-| `project()` | Rotate the surface, cull back faces, apply perspective, lighting, and depth fog |
-| `fit()` | Fit the projected points into the character grid |
-| `rasterize()` | Resolve depth and map brightness to ASCII density |
-| `emit()` | Write either a static frame or SMIL scene using neutral shades and fixed text lengths |
+| 0-1.45 seconds | Hands enter; a small Hello World greeting appears |
+| 1.45-2.75 seconds | Hands reach toward the center |
+| 2.65-3.55 seconds | A restrained green signal passes between the fingertips |
+| 3.35-4.65 seconds | Hands separate; Hello KJ appears briefly |
+| 4.55-6 seconds | Hands withdraw and the wordmark settles into view |
+| After 6 seconds | The complete still composition remains visible |
 
-The surface contains front and back caps plus walls around the text outline.
-Brightness selects both a density-ramp character and a neutral shade, so the
-letter faces remain distinct from the walls. A small front-cap depth offset
-prevents ties in the rasterizer from cutting streaks through the letters.
+The introduction plays once per image load. A replay button is available in the
+local profile preview. Essential facts and links stay in ordinary Markdown.
 
-The default grid has 91 columns, with 9px cells and 18px side padding, producing
-an 855px-wide asset. `WORDMARK_ROW_MARGIN` defaults to zero for the static build.
-Explicit animated modes retain at least four blank rows above and below the
-wordmark to accommodate their status sequence.
+## Fallback
 
-The source font is bundled IBM Plex Mono Bold. Its exact upstream source, hash,
-and open font license are included in [assets/fonts](../assets/fonts/). Using
-the same input font on every platform removes the old Arial/DejaVu/Futura
-selection difference from the build.
+The wordmark group is visible in the underlying SVG. SMIL hides it for the intro
+and then restores it. The hand scene has zero base opacity. A viewer that ignores
+animation therefore displays the complete wordmark immediately, with no overlapping
+hand scene. The README also selects the still file for `prefers-reduced-motion`
+and provides a direct still-artwork link.
 
-## Regeneration
+## Regeneration and review
 
 ```bash
 python -m pip install -r scripts/requirements.txt -r scripts/requirements-wordmark.txt
 python scripts/generate_all.py
+python scripts/validate_profile.py
 python -m pytest -q
 ```
 
-This rebuilds both wordmark variants and the optional CLI panel. CI installs
-NumPy and Pillow and verifies all assets; no renderer test is skipped for missing packages.
+For a separate animation experiment:
 
-For a wordmark-only build, `python scripts/generate_wordmark.py` also defaults
-to the static pose. `--preview` prints an ASCII frame in the terminal.
+```bash
+python scripts/generate_braille.py --mode intro --out /tmp/kj-braille.svg
+```
 
-## Animation and fallback
+Generation defaults to the static variant. The profile build explicitly selects
+`intro` for `kj-wordmark-animated.svg`. Inspect the artwork at desktop and phone
+widths. A static SVG renderer checks the fallback only; live playback needs an
+SVG animation-capable viewer. During this change, key frames were also sampled
+from the SVG's opacity/translation timelines and rendered offline. Browser
+playback was not verified in the automated environment.
 
-The profile build explicitly selects `rock` for `kj-wordmark-animated.svg`.
-The intro takes approximately 13.5 seconds, then a 20-frame sequence rocks the
-wordmark. Name, headline, and all meaningful profile facts stay visible in
-Markdown while this plays. The animation's terminal readouts are visual effects;
-they do not claim current repository counts or fetch live profile data.
+## Earlier ASCII experiment
 
-A visible rest frame is hidden at time zero only when SMIL runs. The animated
-scene has zero base opacity and becomes visible through SMIL. A viewer that
-ignores animation therefore displays the rest frame instead of a blank panel
-or overlapping scenes. The README's picture source separately respects
-`prefers-reduced-motion` by selecting the compact static file.
-
-The `once` and `spin` modes remain available for experiments. They precompute
-multiple frames and use SVG animation to switch between them.
-
-Use the generator's `--help` for the available output and mode arguments, and
-write experiments outside `assets/` so they cannot replace a committed asset.
-
-`WORDMARK_TEXT`, `WORDMARK_FONT`, `WORDMARK_FONT_INDEX`, `WORDMARK_TILT`,
-`WORDMARK_COLS`, and `WORDMARK_ROW_MARGIN` support local geometry experiments.
-Leave them unset when reproducing committed output. The bundled font is the
-default even when other fonts are installed.
+`scripts/generate_wordmark.py` retains the previous extruded ASCII renderer and
+its `static`, `rock`, `once`, and `spin` modes. It is no longer selected by the
+profile build. Its `WORDMARK_*` environment overrides only affect that legacy
+renderer. Write its experimental output outside `assets/` to avoid replacing the
+profile artwork. Historical design notes remain in `docs/superpowers/`.

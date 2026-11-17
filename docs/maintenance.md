@@ -41,15 +41,16 @@ design page rather than embedded in the profile's main reading flow.
 
 ## Reproducible artwork
 
-The wordmark renderer uses the bundled font in `assets/fonts/`. Keep its source
-record and license with it. Use the checked-in default configuration for committed
-assets; `WORDMARK_*` overrides are for local experiments. Rebuild all assets
-after changing a generator or shared SVG helper.
+The profile renderer is `scripts/generate_braille.py`. It uses the bundled font
+in `assets/fonts/` and the locally stored hand fields in `scripts/data/`. Keep
+their source records with them. Rebuild all assets after changing the generator.
 
-The profile uses the `rock` wordmark mode. `once` and `spin` remain available for
-experiments; write those to separate files. Validation permits the dedicated
-hero's opacity, fill, and translation animations, while still rejecting scripts,
-external resources, link mutation, and animation in the static artifacts.
+The `intro` mode reaches its final still composition in six seconds. Both hero
+variants use an 855 by 300 canvas. The older `generate_wordmark.py` remains an
+independent ASCII experiment; its modes and `WORDMARK_*` overrides do not control
+the profile build. Write those experiments to separate files. Validation permits
+the dedicated hero's opacity, fill, and translation animations, while rejecting
+scripts, external resources, link mutation, and animation in static artifacts.
 See [the renderer notes](3d-ascii-wordmark.md).
 
 ## CI

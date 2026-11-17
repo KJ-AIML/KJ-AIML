@@ -10,7 +10,7 @@ My rule is simple: *make it exist first, make it production-ready next.*
 
 <picture>
   <source media="(prefers-reduced-motion: reduce)" srcset="./assets/kj-wordmark.svg" />
-  <img src="./assets/kj-wordmark-animated.svg" width="855" alt="A terminal boot sequence and particle transitions assemble the rocking KJ-AIML 3D ASCII wordmark" />
+  <img src="./assets/kj-wordmark-animated.svg" width="855" alt="Shaded Braille hands reach toward one another, then reveal a pearl and lavender KJ-AIML wordmark" />
 </picture>
 
 <sub>[View still artwork](./assets/kj-wordmark.svg)</sub>

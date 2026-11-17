@@ -37,3 +37,11 @@ owner's confirmation.
 When refreshing this page, check both the README and the linked implementation or
 release. A repository description alone is not evidence for user counts,
 production deployment, compliance, or measured performance.
+
+## Visual source
+
+The owner supplied [pi-ter](https://github.com/KJ-AIML/pi-ter) as the animation
+reference on 2026-11-17. The profile adapts its shaded hand fields and short
+reaching gesture at revision `45821bb0b1d1bf13036547681622ae879ef5af7a`.
+The local field format and exact source paths are recorded in
+[the artwork provenance](../../scripts/data/README.md).

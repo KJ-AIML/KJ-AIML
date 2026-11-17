@@ -117,8 +117,8 @@ def validate_svg(path: Path, *, allow_animation: bool = False) -> ET.Element:
     viewbox = [_number(value, "viewBox") for value in re.split(r"[\s,]+", root.get("viewBox", "").strip())]
     if viewbox != [0, 0, width, height]:
         raise ValueError(f"viewBox must match the SVG dimensions: {path}")
-    if path.name == "kj-wordmark.svg" and height * 855 / width > 220:
-        raise ValueError("wordmark exceeds 220px at its 855px display width")
+    if path.name == "kj-wordmark.svg" and height * 855 / width > 300:
+        raise ValueError("wordmark exceeds 300px at its 855px display width")
     for tag in ("title", "desc"):
         element = root.find(f"{{{SVG_NS}}}{tag}")
         if element is None or not "".join(element.itertext()).strip():

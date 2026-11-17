@@ -91,3 +91,31 @@ profile with reproducible artifacts and current passing checks.
 - **Order:** identity → production work → AXTL → open source → stack → contact.
   Production experience leads because it is the strongest signal for the target
   roles.
+
+## Visual direction correction (owner reference, 2026-11-17)
+
+The owner rejected the restored boot-log hero and supplied
+`https://github.com/KJ-AIML/pi-ter` as the visual reference. This supersedes the
+boot/particle/rock requirement above. Use the sculpted Braille hand artwork and
+short, deliberate gesture from that repository, followed by an original shaded
+`KJ-AIML` wordmark. Keep a black canvas, pearl highlights, lavender depth, and
+one green contact accent. The intro resolves in six seconds. No terminal window
+chrome, fabricated telemetry, or repeated full-scene boot loop.
+
+This is a focused S1 artwork change: a new deterministic Python generator plus
+locally vendored hand fields, the two generated wordmark assets, build selection,
+README image description, and maintenance notes. Profile facts and the optional
+CLI illustration are outside the change. The old renderer remains available for
+experiments, with its existing animation tests. No dependencies are added.
+
+Both new variants use the same 855 by 300 canvas to avoid a layout jump when
+reduced motion is selected. The static height allowance changes accordingly.
+Keep a visible static fallback when SMIL is unavailable and keep the 500 KB
+asset limit. The generator emits ordinary geometry rather than requiring an
+installed Braille font. Record the upstream revision and artwork provenance.
+
+Done: inspect key animation frames and the final composition at desktop/phone
+widths, verify the finite timeline reaches the still frame, run the existing
+generation/freshness/safety checks, and refresh the local preview. Browser
+playback remains a separate manual check when automated browser access is
+unavailable. Rollback is limited to this visual change; no publishing is included.

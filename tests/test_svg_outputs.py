@@ -104,7 +104,7 @@ def test_animated_hero_retains_a_visible_nonanimated_frame() -> None:
     fallback = root.find(f"{ns}g[@id='static-fallback']")
     scene = root.find(f"{ns}g[@id='animated-scene']")
     assert fallback is not None and fallback.get("opacity", "1") == "1"
-    assert len(list(fallback.iter(f"{ns}text"))) > 5
+    assert "KONGPHOP JAMREANSUK" in "".join(fallback.itertext())
     assert scene is not None and scene.get("opacity") == "0"
     # Ignoring SMIL leaves the complete fallback visible and the entire intro hidden.
     for element in fallback.iter():

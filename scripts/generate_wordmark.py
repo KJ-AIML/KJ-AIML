@@ -258,7 +258,7 @@ def project(P: np.ndarray, N: np.ndarray, yaw: float):
     return p[:, 0] * f, p[:, 1] * f, z, idx
 
 
-def fit(projected) -> tuple[float, float, float]:
+def fit(projected, row_margin: int | None = None) -> tuple[float, float, float]:
     """Width-driven scale + offset. Derives the row count from the art so the
     panel hugs the wordmark instead of leaving dead terminal space."""
     global ROWS
@@ -267,7 +267,8 @@ def fit(projected) -> tuple[float, float, float]:
     x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
     aspect = CELL_W / CELL_H
     scale = FIT * (COLS - 1) / (x1 - x0)
-    ROWS = int(math.ceil((y1 - y0) * aspect * scale)) + 1 + 2 * ROW_MARGIN
+    margin = ROW_MARGIN if row_margin is None else row_margin
+    ROWS = int(math.ceil((y1 - y0) * aspect * scale)) + 1 + 2 * margin
     cx = (COLS - 1) / 2.0 - (x0 + x1) / 2.0 * scale
     cy = (ROWS - 1) / 2.0 - (y0 + y1) / 2.0 * scale * aspect
     return scale, cx, cy
@@ -717,7 +718,10 @@ def generate(out: Path, mode: str = "static", frames_count: int | None = None,
         dur = dur or 5.0
 
     projected = [project(P, N, yaw) for yaw in yaws]
-    scale, cx, cy = fit(projected)
+    # Legacy status rows need the original vertical padding. Keep this local to
+    # the animated build so a later static build still uses compact framing.
+    margin = ROW_MARGIN if mode == "static" else max(4, ROW_MARGIN)
+    scale, cx, cy = fit(projected, row_margin=margin)
     frames = [rasterize(q, scale, cx, cy) for q in projected]
 
     if preview:

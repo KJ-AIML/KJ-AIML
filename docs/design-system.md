@@ -26,7 +26,7 @@ The optional panel below preserves the CLI visual language for reuse. It is a
 static illustration. It carries no information that is necessary to understand
 the profile.
 
-<img src="../assets/kj-agent-cli.svg" width="860" alt="Static terminal illustration describing agent infrastructure and the Python, Rust, and TypeScript stack" />
+<img src="../assets/kj-agent-cli.svg" width="855" alt="Static terminal illustration describing agent infrastructure and the Python, Rust, and TypeScript stack" />
 
 Both SVGs include a title and description. They contain no animation elements,
 scripts, remote resources, or simulated keyboard controls. The profile therefore

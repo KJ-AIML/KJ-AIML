@@ -21,8 +21,9 @@ letter faces remain distinct from the walls. A small front-cap depth offset
 prevents ties in the rasterizer from cutting streaks through the letters.
 
 The default grid has 91 columns, with 9px cells and 18px side padding, producing
-an 855px-wide asset. `WORDMARK_ROW_MARGIN` defaults to zero; framing follows the
-art rather than retaining the space previously needed by the boot sequence.
+an 855px-wide asset. `WORDMARK_ROW_MARGIN` defaults to zero for the static build.
+Explicit animated modes retain at least four blank rows above and below the
+wordmark to accommodate their status sequence.
 
 The source font is bundled IBM Plex Mono Bold. Its exact upstream source, hash,
 and open font license are included in [assets/fonts](../assets/fonts/). Using
